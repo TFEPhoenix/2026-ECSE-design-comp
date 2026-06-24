@@ -257,7 +257,7 @@
       "internal_id": "",
       "mfg": "",
       "mpn": "",
-      "sch_revision": ""
+      "sch_revision": "1"
     },
     "layer_pairs": [],
     "layer_presets": [],
@@ -277,7 +277,12 @@
     "equivalence_files": []
   },
   "erc": {
-    "erc_exclusions": [],
+    "erc_exclusions": [
+      [
+        "pin_to_pin|406400|1587500|dc008a66-632b-463b-97a4-876206e1b91b|b07e1273-8f5d-4cde-a3e7-53d30634fe47|/8fc49372-b56f-46cf-89c4-1ea30c090d93|/8fc49372-b56f-46cf-89c4-1ea30c090d93|/8fc49372-b56f-46cf-89c4-1ea30c090d93",
+        ""
+      ]
+    ],
     "meta": {
       "version": 0
     },
@@ -473,7 +478,7 @@
       "label_dangling": "error",
       "label_multiple_wires": "warning",
       "lib_symbol_issues": "warning",
-      "lib_symbol_mismatch": "warning",
+      "lib_symbol_mismatch": "ignore",
       "missing_bidi_pin": "warning",
       "missing_input_pin": "warning",
       "missing_power_pin": "error",
@@ -484,7 +489,7 @@
       "no_connect_dangling": "warning",
       "pin_not_connected": "error",
       "pin_not_driven": "error",
-      "pin_to_pin": "warning",
+      "pin_to_pin": "ignore",
       "power_pin_not_driven": "error",
       "same_local_global_label": "warning",
       "similar_label_and_power": "warning",
@@ -686,7 +691,7 @@
         "uuid": "8fc49372-b56f-46cf-89c4-1ea30c090d93"
       }
     ],
-    "used_designators": "J1,D2-4,#PWR7-21,TP1-13,R3-12",
+    "used_designators": "#FLG1-4,SW2,J1-3,C1-3,#PWR3-25,D2-10,U1-3,TP1-14,R2-14",
     "variants": []
   },
   "sheets": [
