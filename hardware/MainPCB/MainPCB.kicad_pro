@@ -116,13 +116,13 @@
         "missing_tuning_profile": "warning",
         "net_conflict": "warning",
         "nonmirrored_text_on_back_layer": "warning",
-        "npth_inside_courtyard": "ignore",
+        "npth_inside_courtyard": "warning",
         "padstack": "warning",
         "pth_inside_courtyard": "ignore",
         "shorting_items": "error",
-        "silk_edge_clearance": "warning",
-        "silk_over_copper": "warning",
-        "silk_overlap": "warning",
+        "silk_edge_clearance": "ignore",
+        "silk_over_copper": "ignore",
+        "silk_overlap": "ignore",
         "skew_out_of_range": "error",
         "solder_mask_bridge": "error",
         "starved_thermal": "error",
@@ -162,7 +162,7 @@
         "min_track_width": 0.0,
         "min_via_annular_width": 0.1,
         "min_via_diameter": 0.5,
-        "solder_mask_to_copper_clearance": 0.0,
+        "solder_mask_to_copper_clearance": 0.005,
         "use_height_for_length_calcs": true
       },
       "teardrop_options": [
@@ -679,7 +679,7 @@
         "uuid": "8fc49372-b56f-46cf-89c4-1ea30c090d93"
       }
     ],
-    "used_designators": "#FLG4,H1-7,R3-9,R17-18,C2,C4-5,D2,#PWR7-16,#PWR27-29,TP1-13,TP17",
+    "used_designators": "TP1-13,TP17,#PWR7-16,#PWR27-29,D2,C2,C4-5,R3-9,R17-18,H1-7,#FLG4",
     "variants": []
   },
   "sheets": [
