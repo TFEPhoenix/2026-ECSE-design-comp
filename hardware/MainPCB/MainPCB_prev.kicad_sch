@@ -5691,6 +5691,10 @@
 		(uuid "039f1b5f-876e-45ee-8253-91635a2a7ba0")
 	)
 	(no_connect
+		(at 128.27 147.32)
+		(uuid "066c2ebb-a81e-43db-bfe2-359bac5ae54f")
+	)
+	(no_connect
 		(at 161.29 119.38)
 		(uuid "1827ca08-be2c-41f6-bb1e-4841032213f6")
 	)
@@ -6435,16 +6439,6 @@
 			(type default)
 		)
 		(uuid "4c22b62d-1c22-424f-b13e-e1a751ca0202")
-	)
-	(wire
-		(pts
-			(xy 119.38 147.32) (xy 128.27 147.32)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4cb5ba4d-b616-4196-bebd-92770ecd6e4a")
 	)
 	(wire
 		(pts
@@ -7996,16 +7990,6 @@
 		)
 		(uuid "2a11705e-160b-48c8-a7dc-1855e85fd558")
 	)
-	(label "Switch"
-		(at 119.38 147.32 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "2b438077-49a0-4f1a-83b5-b05752a1e303")
-	)
 	(label "SCK"
 		(at 207.01 147.32 180)
 		(effects
@@ -8226,7 +8210,7 @@
 		)
 		(uuid "7f2f9927-3c05-4965-8fbb-7ba36fe59025")
 	)
-	(label "CS2"
+	(label "CS1"
 		(at 119.38 127 180)
 		(effects
 			(font
@@ -8316,7 +8300,7 @@
 		)
 		(uuid "b4bb3ae5-e073-4a96-a186-ae851141f206")
 	)
-	(label "CS1"
+	(label "CS2"
 		(at 119.38 114.3 180)
 		(effects
 			(font
@@ -10926,86 +10910,6 @@
 			(project "MainPCB"
 				(path "/8fc49372-b56f-46cf-89c4-1ea30c090d93"
 					(reference "#PWR06")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 246.38 55.88 270)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "74e5cac8-37d8-4494-a90d-c74083796d58")
-		(property "Reference" "#FLG04"
-			(at 248.285 55.88 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 250.19 55.8799 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 246.38 55.88 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 246.38 55.88 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 246.38 55.88 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "63f8d9c1-89cc-4406-8a6d-1017c1900508")
-		)
-		(instances
-			(project "MainPCB"
-				(path "/8fc49372-b56f-46cf-89c4-1ea30c090d93"
-					(reference "#FLG04")
 					(unit 1)
 				)
 			)
@@ -15071,10 +14975,10 @@
 			)
 		)
 		(pin "2"
-			(uuid "aa8903e2-6ebd-4745-8326-3a523e4f44f2")
+			(uuid "aa8903e2-6ebd-4745-8326-3a523e4f44f1")
 		)
 		(pin "1"
-			(uuid "a8ebe691-374a-4fe1-bc23-d915796d054f")
+			(uuid "a8ebe691-374a-4fe1-bc23-d915796d054e")
 		)
 		(instances
 			(project "MainPCB"
