@@ -8,15 +8,18 @@ public class EnemySpawning : MonoBehaviour
     public GameObject enemyType;
     int curIndex = 0;
     public List<float> timeDelays = new List<float>{1,2,3,4,0.1f, 0.1f}; // In seconds
-    public List<Vector3> goalPositions = new List<Vector3>
-    {
-        new Vector3(-6,2,-14),
-        new Vector3(-10,6,-14),
-        new Vector3(-18,2,-14),
-        new Vector3(-21,2,-14),
-    };
+    List<Vector3> goalPositions = new List<Vector3>();
     float curCountDown = 0;
 
+
+    void Start()
+    {
+        // Get goals positions from children
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            goalPositions.Add(transform.GetChild(i).transform.position);
+        }
+    }
     // Update is called once per frame
     void Update()
     {

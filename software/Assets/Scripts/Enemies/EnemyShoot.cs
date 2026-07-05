@@ -44,7 +44,7 @@ public class EnemyShoot : MonoBehaviour
 
     void onShoot()
     {
-        Quaternion aimAngle = Quaternion.LookRotation(Camera.main.transform.position - gameObject.transform.position);
+        Quaternion aimAngle = Quaternion.LookRotation(Camera.main.transform.parent.GetChild(2).position - gameObject.transform.position);
         GameObject bullet = Instantiate(bulletPrefab, gameObject.transform.position, aimAngle);
     }
 }

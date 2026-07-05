@@ -3,6 +3,8 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.InputSystem;
 
+/** <summary>Bullet Count UI</summary>
+*/
 public class Bullets : MonoBehaviour
 {
     public int maxCount = 30;

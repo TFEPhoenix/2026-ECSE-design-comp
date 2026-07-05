@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using UnityEngine;
 
-public class BulletMovementLob : MonoBehaviour
+public class BulletMovementLob : EnemyBullet
 {
 
     public float gravity = 1;
@@ -12,19 +12,21 @@ public class BulletMovementLob : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        Vector3 vectorToCamera = Camera.main.transform.position - transform.position;
-        Vector2 horizontalVectorToCamera = new Vector2(vectorToCamera.x, vectorToCamera.z);
-        float horizontalDistToCamera = horizontalVectorToCamera.magnitude;
+        // Uses Position of player's hurtpoint
+        Vector3 vectorToHurt = Camera.main.transform.parent.GetChild(2).position - transform.position;
+        Vector2 horizontalvectorToHurt = new Vector2(vectorToHurt.x, vectorToHurt.z);
+        float horizontalDistToCamera = horizontalvectorToHurt.magnitude;
         float timeToReachCam = horizontalDistToCamera / horizontalSpeed;
-        float verticalDistToCamera = vectorToCamera.y;
+        float verticalDistToCamera = vectorToHurt.y;
         initialVert = (verticalDistToCamera/timeToReachCam) + (0.5f*gravity*timeToReachCam);
-        Vector2 horizontalVelocity = horizontalVectorToCamera.normalized * horizontalSpeed;
+        Vector2 horizontalVelocity = horizontalvectorToHurt.normalized * horizontalSpeed;
         velocity = new Vector3(horizontalVelocity.x, initialVert, horizontalVelocity.y);
     }
 
     // Update is called once per frame
     void Update()
     {
+        CheckHit();
         velocity.y -= gravity * Time.deltaTime;
         transform.position += velocity * Time.deltaTime;
     }

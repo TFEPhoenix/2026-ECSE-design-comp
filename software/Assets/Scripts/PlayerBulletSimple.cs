@@ -1,7 +1,9 @@
 using System.Reflection.Metadata;
 using UnityEngine;
 
-public class BulletMovementSimple : EnemyBullet
+/** <summary>Purely Visual Bullet</summary>
+*/
+public class PlayerBulletSimple : MonoBehaviour
 {
     bool active = true;
     public int speed = 8;
@@ -15,7 +17,6 @@ public class BulletMovementSimple : EnemyBullet
 
     void Update()
     {
-        CheckHit();
         // Moves foward and destroys itself after lifeSpan
         if(active){
             transform.position += transform.forward * speed * Time.deltaTime;
