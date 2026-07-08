@@ -14,17 +14,16 @@ public class ScoreDisplay : MonoBehaviour
         player1Text = CreateScore(
             canvas.transform,
             "P1Score",
-            new Vector2(0.15f, 0.9f)
+            new Vector2(0.2f, 0.1f)
         );
 
         player2Text = CreateScore(
             canvas.transform,
             "P2Score",
-            new Vector2(0.85f, 0.9f)
+            new Vector2(0.8f, 0.1f)
         );
 
 
-        // Listen for score changes
         ScoreManager.Instance.OnScoreChanged += UpdateScore;
 
         UpdateScore();
@@ -35,7 +34,7 @@ public class ScoreDisplay : MonoBehaviour
     {
         GameObject scoreObject = new GameObject(name);
 
-        scoreObject.transform.SetParent(parent);
+        scoreObject.transform.SetParent(parent, false);
 
 
         TextMeshProUGUI text = scoreObject.AddComponent<TextMeshProUGUI>();
