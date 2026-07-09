@@ -3,6 +3,7 @@ using UnityEngine.Rendering;
 
 public class CubeEnemy : MonoBehaviour, Enemy
 {
+    public int scoreForKill;
     public int maxHealth;
     int curHealth;
     HitFlashAllChildren HitFlashLoader;
@@ -21,6 +22,7 @@ public class CubeEnemy : MonoBehaviour, Enemy
 
     public void OnHit()
     {
+
         HitFlashLoader.StartFlash();
         curHealth -= 1;
         if (curHealth <= 0)
@@ -31,6 +33,7 @@ public class CubeEnemy : MonoBehaviour, Enemy
     }
     public void OnDeath()
     {
+        ScoreManager.Instance.AddPlayer1Score(scoreForKill);
         Destroy(gameObject);
     }
 }

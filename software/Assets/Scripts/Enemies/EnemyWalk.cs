@@ -1,3 +1,4 @@
+using UnityEditor.XR;
 using UnityEngine;
 
 public class EnemyWalk : MonoBehaviour
@@ -5,12 +6,8 @@ public class EnemyWalk : MonoBehaviour
     bool isWalking = false;
     public Vector3 goal; // Final position
     public float speed; // Distance per second
-    EnemyShoot shootingScript;
-    void Start()
-    {
-        // Find the part of the enemy that shoots, for the purpose of preventing shooting while moving
-        shootingScript = gameObject.GetComponentInChildren<EnemyShoot>();
-    }
+    bool preventShoot = false;
+ 
     void Update()
     {
         if (isWalking){
@@ -33,19 +30,21 @@ public class EnemyWalk : MonoBehaviour
     void StoppedWalking()
     {
         isWalking = false;
-        shootingScript.canShoot = true;
+        preventShoot = false;
     }
     // Begins movement towards a new goal
     public void StartWalking(Vector3 newGoal)
     {
         goal = newGoal;
         isWalking = true;
-        if (shootingScript == null)
-        {
-            shootingScript = gameObject.GetComponentInChildren<EnemyShoot>();
-        }
-        shootingScript.canShoot = false;
+        preventShoot = true;
         Vector3 vectorToGoal = goal - transform.position;
         transform.rotation = Quaternion.LookRotation(new Vector3(vectorToGoal.x, 0, vectorToGoal.z));
+    }
+    /** <summary>Returns true if Enemy should be unable to shoot</summary>
+    */
+    public bool GetPreventShoot()
+    {
+        return preventShoot;
     }
 }

@@ -127,6 +127,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f0bd8e8a558bb541b5d8261fde376e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CubeEnemy
+  scoreForKill: 100
   maxHealth: 2
 --- !u!114 &1973481984490834684
 MonoBehaviour:
@@ -141,7 +142,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyWalk
   goal: {x: 3, y: 3, z: 3}
-  speed: 3
+  speed: 6
 --- !u!1001 &193160311641274994
 PrefabInstance:
   m_ObjectHideFlags: 0

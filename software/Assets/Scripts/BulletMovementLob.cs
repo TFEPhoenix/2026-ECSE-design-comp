@@ -13,7 +13,7 @@ public class BulletMovementLob : EnemyBullet
     void Start()
     {
         // Uses Position of player's hurtpoint
-        Vector3 vectorToHurt = Camera.main.transform.parent.GetChild(2).position - transform.position;
+        Vector3 vectorToHurt = Camera.main.transform.parent.Find("HurtPoint").position - transform.position;
         Vector2 horizontalvectorToHurt = new Vector2(vectorToHurt.x, vectorToHurt.z);
         float horizontalDistToCamera = horizontalvectorToHurt.magnitude;
         float timeToReachCam = horizontalDistToCamera / horizontalSpeed;

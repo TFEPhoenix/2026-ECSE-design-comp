@@ -18,6 +18,7 @@ public class EnemyShoot : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        canShoot = CheckCanShoot();
         if (canShoot)
         {
             Vector3 vectorToCamera = Camera.main.transform.position - transform.position;
@@ -41,10 +42,45 @@ public class EnemyShoot : MonoBehaviour
         }
         
     }
+    /** <summary>Returns false if any checked components or children are preventing shooting</summary>
+    */
+    public bool CheckCanShoot()
+    {
+        EnemyWalk walkScript = gameObject.GetComponentInParent<EnemyWalk>();
+        if (walkScript != null)
+        {
+            if (walkScript.GetPreventShoot())
+            {
+                return false;
+            }
+        }
+        Transform shieldHolder = transform.parent.Find("ShieldHolder");
+        if (shieldHolder != null){
+            Transform shield = shieldHolder.Find("Shield");
+            if (shield!=null){
+                shield.TryGetComponent<Shield>(out var shieldScript);
+                if (shieldScript != null){
+                    if (shieldScript.GetPreventShoot())
+                    {
+                        return false;
+                    }
+                }
+            }
+            else
+            {
+                // Destroy the shieldHolder if the shield has been broken
+                // Should likely be checked elsewhere
+                Destroy(shieldHolder);
+            }
+        }
 
+        
+
+        return true;
+    }
     void onShoot()
     {
-        Quaternion aimAngle = Quaternion.LookRotation(Camera.main.transform.parent.GetChild(2).position - gameObject.transform.position);
+        Quaternion aimAngle = Quaternion.LookRotation(Camera.main.transform.parent.Find("HurtPoint").position - gameObject.transform.position);
         GameObject bullet = Instantiate(bulletPrefab, gameObject.transform.position, aimAngle);
     }
 }

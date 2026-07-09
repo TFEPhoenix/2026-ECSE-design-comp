@@ -14,14 +14,19 @@ public class ClickShoot : MonoBehaviour
     Vector3 targetDirection;
     Camera camera;
     Transform endTransform;
+    bool hasAmmo;
     void Start()
     {
         camera = Camera.main;
+        hasAmmo = AmmoManager.Instance.player1Ammo > 0;
     }
 
     void Update()
     {
-        if(Mouse.current.leftButton.wasPressedThisFrame){
+        hasAmmo = AmmoManager.Instance.player1Ammo > 0;
+        if(hasAmmo && Mouse.current.leftButton.wasPressedThisFrame){
+            // Lower Ammo Count by 1
+            AmmoManager.Instance.player1Ammo --;
             // Get the transform of the object directly in the path of bullet
             // Should only detect those in selected targetLayer (Bullet target), within a distance of 200
             ray = camera.ScreenPointToRay(Mouse.current.position.ReadValue());

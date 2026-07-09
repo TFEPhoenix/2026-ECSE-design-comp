@@ -14,6 +14,10 @@ public class EnemySpawning : MonoBehaviour
 
     void Start()
     {
+        if (timeDelays.Count == 0 || transform.childCount == 0)
+        {
+            Destroy(gameObject);
+        }
         // Get goals positions from children
         for (int i = 0; i < transform.childCount; i++)
         {
@@ -46,7 +50,7 @@ public class EnemySpawning : MonoBehaviour
     */
     void SpawnEnemy()
     {
-        GameObject newEnemy = Instantiate(enemyType, transform.position, Quaternion.LookRotation(new Vector3(0,0,0)));
+        GameObject newEnemy = Instantiate(enemyType, transform.position, Quaternion.LookRotation(new Vector3(0,1,0)));
         // Set the position the enemy is walking to within the enemy
         if (newEnemy.TryGetComponent<EnemyWalk>(out var enemyScript))
         {

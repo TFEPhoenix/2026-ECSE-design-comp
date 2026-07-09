@@ -1,18 +1,19 @@
 using UnityEditor.ShaderGraph;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 public class HitFlashAllChildren : MonoBehaviour
 {
     float flash_length = 0.14f;
     float cur_time = 0;
-    Renderer[] renderers;
+    List<Renderer> renderers;
     MaterialPropertyBlock block;
     Dictionary<Renderer, Color> originalColors = new Dictionary<Renderer, Color>();
 
     public void Start()
     {
-        renderers = GetComponentsInChildren<Renderer>();
+        renderers = GetComponentsInChildren<Renderer>().ToList();
         block = new MaterialPropertyBlock();
 
         // Store original colours for Object & children
@@ -23,9 +24,10 @@ public class HitFlashAllChildren : MonoBehaviour
     }
     public void StartFlash()
     {   
-        
+        renderers.RemoveAll(r => r == null);
         foreach (Renderer r in renderers)
         {
+            
             r.GetPropertyBlock(block);
             block.SetColor("_BaseColor", Color.red);
             r.SetPropertyBlock(block);
@@ -36,9 +38,11 @@ public class HitFlashAllChildren : MonoBehaviour
     // Resets to original color
     public void EndFlash()
     {
+        renderers.RemoveAll(r => r == null);
         // Sets object & children to the stored original colours
         foreach (Renderer r in renderers)
         {
+        
         r.GetPropertyBlock(block);
         block.SetColor("_BaseColor", originalColors[r]);
         r.SetPropertyBlock(block);
