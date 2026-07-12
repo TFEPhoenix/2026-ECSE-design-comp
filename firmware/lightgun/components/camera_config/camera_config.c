@@ -79,3 +79,5 @@ esp_err_t camera_init() {
 
     return ESP_OK;
 }
+
+esp_err_t camera_deinit() { return esp_camera_deinit(); }
