@@ -1,7 +1,10 @@
 #include "camera_config.h"
 #include "camera_pinout.h"
 #include "esp_camera.h"
+#include "esp_heap_caps.h"
 #include "esp_log.h"
+#include "esp_psram.h"
+#include "esp_timer.h"
 
 static const camera_config_t camera_config_s = {
     .pin_pwdn = CAM_PIN_PWDN,
@@ -46,7 +49,6 @@ static void camera_configure_sensor() {
     s->set_saturation(s, -4);
     s->set_sharpness(s, 3);
     s->set_denoise(s, 8);
-    s->set_special_effect(s, 2); // should be greyscale
 
     s->set_aec_value(s, 300);
     s->set_agc_gain(s, 20);
@@ -65,6 +67,9 @@ static void camera_configure_sensor() {
     s->set_hmirror(s, 0);
     s->set_vflip(s, 0);
     s->set_colorbar(s, 0);
+
+    // s->set_reg(s, 0x3824, 0x1f, 0x04);
+    // s->set_reg(s, 0x460c, 0x02, 0x02);
 }
 
 esp_err_t camera_init() {
@@ -81,3 +86,37 @@ esp_err_t camera_init() {
 }
 
 esp_err_t camera_deinit() { return esp_camera_deinit(); }
+
+void camera_test() {
+
+    // memory stuff
+    if (esp_psram_is_initialized()) {
+        ESP_LOGI("TEST", "PSRAM size: %d bytes", esp_psram_get_size());
+    } else {
+        ESP_LOGE("TEST", "PSRAM NOT initialized");
+    }
+
+    ESP_LOGI("TEST", "internal free: %u",
+             heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
+
+    ESP_LOGI("TEST", "psram free: %u",
+             heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
+
+    ESP_LOGI("TEST", "dma free: %u", heap_caps_get_free_size(MALLOC_CAP_DMA));
+
+    // quick fps test too
+    ESP_LOGI("TEST", "RUnnining FPS Test...");
+    int64_t start = esp_timer_get_time();
+    int frame_count = 300;
+
+    for (int i = 0; i < frame_count; i++) {
+        camera_fb_t *fb = esp_camera_fb_get();
+        esp_camera_fb_return(fb);
+    }
+
+    int64_t end = esp_timer_get_time();
+    double elapsed_sec = (end - start) / 1e6;
+    double fps = frame_count / elapsed_sec;
+
+    ESP_LOGI("TEST", "avg fps over %d frames: %.2f", frame_count, fps);
+}
