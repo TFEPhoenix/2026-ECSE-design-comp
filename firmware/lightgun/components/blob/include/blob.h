@@ -8,6 +8,8 @@
 #define COLS 320
 #define IMAGE_SIZE (ROWS * COLS)
 #define DIRECTIONS 8
+#define QUEUE_SIZE 1024
+#define MIN_BLOB_SIZE 3
 
 typedef struct {
     float row;

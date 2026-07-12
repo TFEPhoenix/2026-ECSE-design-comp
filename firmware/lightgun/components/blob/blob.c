@@ -2,9 +2,8 @@
 
 #include <math.h>
 #include <stdlib.h>
-#include <string.h>
 
-static point_t queue[IMAGE_SIZE];
+static point_t queue[QUEUE_SIZE];
 
 void insert_blob(blob_t best_four[4], int *found_so_far, blob_t new_blob) {
     if (*found_so_far < 4) {
@@ -59,6 +58,11 @@ blob_t find_blob(image_t image, point_t start) {
     int tail = 0;
 
     queue[tail++] = start;
+
+    if (tail >= QUEUE_SIZE) {
+        return (blob_t){0, 0, 0, 0};
+    }
+
     set_pixel(image, start, 0);
 
     while (head != tail) {
@@ -105,6 +109,11 @@ bool find_all_blobs(image_t image, blob_t best[4]) {
             }
 
             blob_t b = find_blob(image, coord);
+
+            if (b.pixels < MIN_BLOB_SIZE) {
+                continue; // likely noise or smth like that
+            }
+
             insert_blob(best, &found, b);
         }
     }
