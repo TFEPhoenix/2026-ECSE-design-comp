@@ -35,6 +35,37 @@ static const camera_config_t camera_config_s = {
     .grab_mode = CAMERA_GRAB_LATEST,
 };
 
+static void camera_configure_sensor() {
+    sensor_t *s = esp_camera_sensor_get();
+
+    s->set_framesize(s, FRAMESIZE_QVGA);
+    s->set_quality(s, 0);
+
+    s->set_brightness(s, 0);
+    s->set_contrast(s, 3);
+    s->set_saturation(s, -4);
+    s->set_sharpness(s, 3);
+    s->set_denoise(s, 8);
+    s->set_special_effect(s, 2); // should be greyscale
+
+    s->set_aec_value(s, 300);
+    s->set_agc_gain(s, 20);
+    s->set_gainceiling(s, GAINCEILING_2X);
+
+    // Disable all the auto shit
+    s->set_whitebal(s, 0);
+    s->set_awb_gain(s, 0);
+    s->set_wb_mode(s, 0);
+    s->set_exposure_ctrl(s, 0);
+    s->set_aec2(s, 0);
+    s->set_gain_ctrl(s, 0);
+    s->set_bpc(s, 0);
+    s->set_wpc(s, 0);
+    s->set_lenc(s, 0);
+    s->set_hmirror(s, 0);
+    s->set_vflip(s, 0);
+    s->set_colorbar(s, 0);
+}
 
 esp_err_t camera_init() {
     esp_err_t err = esp_camera_init(&camera_config_s);
@@ -43,6 +74,8 @@ esp_err_t camera_init() {
         ESP_LOGE("CAMERA", "Camera Init Failed");
         return err;
     }
+
+    camera_configure_sensor();
 
     return ESP_OK;
 }
