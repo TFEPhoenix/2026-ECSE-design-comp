@@ -153,7 +153,7 @@ public class AmmoDisplay : MonoBehaviour
         rect.anchorMin = anchor;
         rect.anchorMax = anchor;
 
-        rect.sizeDelta = new Vector2(40, 40);
+        rect.sizeDelta = new Vector2(120, 120);
     }
 
     void Update()
