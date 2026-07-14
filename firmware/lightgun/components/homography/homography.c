@@ -78,22 +78,19 @@ homography_t invert_homography(homography_t H) {
     float h = H.m[2][1];
     float i = H.m[2][2];
 
-    float det = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
-    float inv = 1 / det;
-
     homography_t R;
 
-    R.m[0][0] = (e * i - f * h) * inv;
-    R.m[0][1] = -(b * i - c * h) * inv;
-    R.m[0][2] = (b * f - c * e) * inv;
+    R.m[0][0] = e * i - f * h;
+    R.m[0][1] = -(b * i - c * h);
+    R.m[0][2] = b * f - c * e;
 
-    R.m[1][0] = -(d * i - f * g) * inv;
-    R.m[1][1] = (a * i - c * g) * inv;
-    R.m[1][2] = -(a * f - c * d) * inv;
+    R.m[1][0] = -(d * i - f * g);
+    R.m[1][1] = a * i - c * g;
+    R.m[1][2] = -(a * f - c * d);
 
-    R.m[2][0] = (d * h - e * g) * inv;
-    R.m[2][1] = -(a * h - b * g) * inv;
-    R.m[2][2] = (a * e - b * d) * inv;
+    R.m[2][0] = d * h - e * g;
+    R.m[2][1] = -(a * h - b * g);
+    R.m[2][2] = a * e - b * d;
 
     return R;
 }
@@ -101,12 +98,16 @@ homography_t invert_homography(homography_t H) {
 point_t apply_homography(const homography_t *H, point_t p) {
     float w = H->m[2][0] * p.col + H->m[2][1] * p.row + H->m[2][2];
 
+    if (fabsf(w) < BASICALLY_ZERO) {
+        w = BASICALLY_ZERO;
+    }
+
     return (point_t){
         .col = (H->m[0][0] * p.col + H->m[0][1] * p.row + H->m[0][2]) / w,
         .row = (H->m[1][0] * p.col + H->m[1][1] * p.row + H->m[1][2]) / w};
 }
 
 point_t apply_transformation(point_t p) {
-    const homography_t T = {.m = {{0.5, 0.5, 0}, {-0.5, 0.5, 0.5}, {0, 0, 0}}};
+    const homography_t T = {.m = {{0.5, 0.5, 0}, {-0.5, 0.5, 0.5}, {0, 0, 1}}};
     return apply_homography(&T, p);
 }
