@@ -2,8 +2,11 @@
 
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
 
 static point_t queue[QUEUE_SIZE];
+static blob_t last_corners[4];
+static bool have_last = false;
 
 void insert_blob(blob_t best_four[4], int *found_so_far, blob_t new_blob) {
     if (*found_so_far < 4) {
@@ -58,12 +61,9 @@ blob_t find_blob(image_t image, point_t start) {
     int tail = 0;
 
     queue[tail++] = start;
-
-    if (tail >= QUEUE_SIZE) {
-        return (blob_t){0, 0, 0, 0};
-    }
-
     set_pixel(image, start, 0);
+
+    bool overflow = false;
 
     while (head != tail) {
         point_t node = queue[head++];
@@ -75,6 +75,7 @@ blob_t find_blob(image_t image, point_t start) {
             if (ncol >= 0 && ncol < COLS && nrow >= 0 && nrow < ROWS) {
                 point_t neighbour = (point_t){.row = nrow, .col = ncol};
                 uint8_t npixel_value = get_pixel(image, neighbour);
+
                 if (npixel_value < THRESHOLD) {
                     continue;
                 }
@@ -85,9 +86,19 @@ blob_t find_blob(image_t image, point_t start) {
                 coldA += neighbour.col * npixel_value;
 
                 set_pixel(image, neighbour, 0);
+
+                if (tail >= QUEUE_SIZE) {
+                    overflow = true;
+                    continue;
+                }
+
                 queue[tail++] = neighbour;
             }
         }
+    }
+
+    if (overflow) {
+        return (blob_t){0};
     }
 
     return (blob_t){
@@ -98,10 +109,39 @@ blob_t find_blob(image_t image, point_t start) {
     };
 }
 
+static void align_to_previous(blob_t blobs[4]) {
+    if (!have_last) {
+        have_last = true;
+        memcpy(last_corners, blobs, sizeof(last_corners));
+        return;
+    }
+    int best_shift = 0;
+    float best_cost = INFINITY;
+    for (int shift = 0; shift < 4; shift++) {
+        float cost = 0;
+        for (int i = 0; i < 4; i++) {
+            blob_t *b = &blobs[(i + shift) % 4];
+            float dr = b->row - last_corners[i].row;
+            float dc = b->col - last_corners[i].col;
+            cost += dr * dr + dc * dc;
+        }
+        if (cost < best_cost) {
+            best_cost = cost;
+            best_shift = shift;
+        }
+    }
+    blob_t rotated[4];
+    for (int i = 0; i < 4; i++)
+        rotated[i] = blobs[(i + best_shift) % 4];
+    memcpy(blobs, rotated, sizeof(rotated));
+    memcpy(last_corners, blobs, sizeof(last_corners));
+}
+
 bool find_all_blobs(image_t image, blob_t best[4]) {
     int found = 0;
-    for (int row = 0; row < ROWS; row++) {
-        for (int col = 0; col < COLS; col++) {
+
+    for (int row = 0; row < ROWS; row += 2) {
+        for (int col = 0; col < COLS; col += 2) {
             point_t coord = {.row = row, .col = col};
 
             if (get_pixel(image, coord) < THRESHOLD) {
@@ -111,16 +151,18 @@ bool find_all_blobs(image_t image, blob_t best[4]) {
             blob_t b = find_blob(image, coord);
 
             if (b.pixels < MIN_BLOB_SIZE) {
-                continue; // likely noise or smth like that
+                continue;
             }
 
             insert_blob(best, &found, b);
         }
     }
 
-    if (found != 4)
+    if (found != 4) {
         return false;
+    }
 
     order_corners(best);
+    align_to_previous(best);
     return true;
 }
