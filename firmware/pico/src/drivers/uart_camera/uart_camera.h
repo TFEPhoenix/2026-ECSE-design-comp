@@ -1,1 +1,1 @@
-int main_uart();
+void uart_camera_init();
