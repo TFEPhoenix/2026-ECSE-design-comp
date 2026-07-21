@@ -1,6 +1,7 @@
 #include "hardware/gpio.h"
 #include "pico/stdlib.h"
 #include "pico/time.h"
+#include "shared_state.h"
 
 #define ON_TIME_MS 50
 #define OFF_TIME_MS 20
@@ -13,11 +14,13 @@ static bool solenoid_on = false;
 
 static void solenoid_deactivate() {
     solenoid_on = false;
+    shared_state_update_trigger(false);
     gpio_put(SOLENOID_PIN, 0);
 }
 
 static void solenoid_activate() {
     solenoid_on = true;
+    shared_state_update_trigger(true);
     gpio_put(SOLENOID_PIN, 1);
 }
 
@@ -59,6 +62,7 @@ void io_init() {
 
     gpio_init(SWITCH_PIN);
     gpio_set_dir(SWITCH_PIN, GPIO_IN);
+    shared_state_update_trigger(false);
     gpio_set_irq_enabled_with_callback(SWITCH_PIN,
                                        GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE,
                                        true, switch_gpio_callback);
