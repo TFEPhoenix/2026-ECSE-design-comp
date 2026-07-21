@@ -18,6 +18,8 @@ void uart_camera_init() {
 }
 
 int main_uart() {
+    uart_camera_init();
+    
     char buffer[128];
     int buffer_idx = 0;
 

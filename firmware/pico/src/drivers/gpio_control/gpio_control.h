@@ -1,1 +1,3 @@
-void gpio_loop();
+#pragma once
+
+void io_init();

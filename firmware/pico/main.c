@@ -4,7 +4,6 @@
 
 int main() {
     stdio_init_all();
-    // main_uart();
-
-    gpio_loop();
+    io_init();
+    main_uart();
 }
