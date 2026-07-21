@@ -1,4 +1,7 @@
+#include "uart_camera.h"
+#include <hardware/sync.h>
 #include "hardware/uart.h"
+#include <string.h>
 #include "pico/stdlib.h"
 #include <stdio.h>
 
@@ -10,14 +13,31 @@
 static volatile char buffer[128];
 static volatile int buffer_idx = 0;
 
+static volatile bool sample_ready = false;
+static volatile camera_sample_t latest_sample;
+
+static void parse_and_store(const char *line) {
+    float col, row;
+    int found_flag;
+
+    if (sscanf(line, "POS,%f,%f,%d", &col, &row, &found_flag) == 3) {
+        latest_sample.col = col;
+        latest_sample.row = row;
+        latest_sample.found = (found_flag != 0);
+        sample_ready = true;
+    }
+}
+
 void on_uart_rx() {
     while (uart_is_readable(UART_ID)) {
         char c = uart_getc(UART_ID);
 
-        if (c == '\n' || buffer_idx >= sizeof(buffer) - 1) {
-            buffer[buffer_idx] = '\0';
+        if (c == '\n' || buffer_idx >= (int)sizeof(buffer) - 1) {
+            char local_copy[128];
+            memcpy(local_copy, (const char *)buffer, buffer_idx);
+            local_copy[buffer_idx] = '\0';
             buffer_idx = 0;
-            printf("Received: %s\n", buffer);
+            parse_and_store(local_copy);
         } else {
             buffer[buffer_idx++] = c;
         }
@@ -39,4 +59,17 @@ void uart_camera_init() {
     irq_set_exclusive_handler(UART1_IRQ, on_uart_rx);
     irq_set_enabled(UART1_IRQ, true);
     uart_set_irq_enables(UART_ID, true, false);
+}
+
+bool uart_camera_get_sample(camera_sample_t *out) {
+    if (!sample_ready)
+        return false;
+
+    uint32_t saved_irq = save_and_disable_interrupts();
+    *out = (camera_sample_t){latest_sample.col, latest_sample.row,
+                             latest_sample.found};
+    sample_ready = false;
+    restore_interrupts(saved_irq);
+
+    return true;
 }
