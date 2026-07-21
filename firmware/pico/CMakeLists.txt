@@ -48,7 +48,7 @@ pico_set_program_name(pico "pico")
 pico_set_program_version(pico "0.1")
 
 pico_enable_stdio_uart(pico 0)
-pico_enable_stdio_usb(pico 0)
+pico_enable_stdio_usb(pico 1) # for testing purposes ill leave this on until phoenix adds his tinyusb code
 
 target_link_libraries(pico
     pico_stdlib
