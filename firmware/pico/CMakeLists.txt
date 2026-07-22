@@ -33,7 +33,7 @@ project(pico C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-add_subdirectory(src/drivers/uart_camera)
+add_subdirectory(src/drivers/camera_uart)
 add_subdirectory(src/drivers/imu_spi)
 add_subdirectory(src/drivers/gpio_control)
 add_subdirectory(src/processing)
@@ -63,7 +63,7 @@ target_include_directories(pico PRIVATE
 target_link_libraries(pico
     hardware_spi
     hardware_timer
-    uart_camera
+    camera_uart
     imu_spi
     gpio_control
     filters

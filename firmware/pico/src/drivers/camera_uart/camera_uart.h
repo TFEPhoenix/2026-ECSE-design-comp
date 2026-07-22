@@ -9,5 +9,5 @@ typedef struct {
     bool found;
 } camera_sample_t;
 
-void uart_camera_init();
-bool uart_camera_get_sample(camera_sample_t *out);
+void camera_uart_init();
+bool camera_uart_get_sample(camera_sample_t *out);

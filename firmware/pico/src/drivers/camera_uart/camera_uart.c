@@ -1,9 +1,9 @@
-#include "uart_camera.h"
-#include <hardware/sync.h>
+#include "camera_uart.h"
 #include "hardware/uart.h"
-#include <string.h>
 #include "pico/stdlib.h"
+#include <hardware/sync.h>
 #include <stdio.h>
+#include <string.h>
 
 #define UART_ID uart1
 #define UART_TX_PIN 8
@@ -28,7 +28,7 @@ static void parse_and_store(const char *line) {
     }
 }
 
-void on_uart_rx() {
+static void on_uart_rx() {
     while (uart_is_readable(UART_ID)) {
         char c = uart_getc(UART_ID);
 
@@ -44,7 +44,7 @@ void on_uart_rx() {
     }
 }
 
-void uart_camera_init() {
+void camera_uart_init() {
     buffer_idx = 0;
 
     uart_init(UART_ID, BAUD_RATE);
@@ -61,7 +61,7 @@ void uart_camera_init() {
     uart_set_irq_enables(UART_ID, true, false);
 }
 
-bool uart_camera_get_sample(camera_sample_t *out) {
+bool camera_uart_get_sample(camera_sample_t *out) {
     if (!sample_ready)
         return false;
 
