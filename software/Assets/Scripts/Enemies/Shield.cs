@@ -1,81 +1,61 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class Shield : DestructableObject
 {
-    Transform raisedRef;
-    Transform loweredRef;
-    public float speedMove;
-    public float speedTurn;
-    bool raising = false;
-    bool lowering = false;
-    bool finishedRaising = false;
-    bool finishedLowering = true; // Assumes shield starts ~ in lowered position
+
+
     bool preventShoot = false;
     float timer = 5;
+    Animator animationControl;
+    GameObject root;
+    bool isUp = false;
+    bool isDown = true;
     
     void Start()
     {
-        raisedRef = transform.parent.Find("RaiseRef");
-        loweredRef = transform.parent.Find("LowRef");
+        animationControl = gameObject.GetComponentInParent<Animator>();
+        root = animationControl.gameObject;
+        if (root == null)
+        {
+            root = transform.parent.gameObject;
+        }
     }
 
     void Update()
     {
-        if (raising)
+        if (!checkShieldForceUp())
         {
-            transform.position = Vector3.MoveTowards(transform.position, raisedRef.position, speedMove * Time.deltaTime);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, raisedRef.rotation, speedTurn * Time.deltaTime);
-            // Check if finished raising shield
-            if (transform.position == raisedRef.position && transform.rotation == raisedRef.rotation)
+            if (timer <= 0)
             {
-                raising = false;
-                finishedRaising = true;
-            }
-        } else if (lowering)
-        {
-            transform.position = Vector3.MoveTowards(transform.position, loweredRef.position, speedMove * Time.deltaTime);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, loweredRef.rotation, speedTurn * Time.deltaTime);
-            // Check if finished lowering shield
-            if (transform.position == loweredRef.position && transform.rotation == loweredRef.rotation)
-            {
-                raising = false;
-                finishedRaising = true;
-                preventShoot = false;
-            }
-        }
-        if (timer <= 0)
-        {
-            if (finishedRaising)
-            {
-                LowerShield();
+                isUp = !isUp;
+                isDown = !isDown;
+                preventShoot = !preventShoot;
                 timer = 5;
-            } else if (finishedLowering)
+                Debug.Log(preventShoot);
+            }
+            else
             {
-                RaiseShield();
-                timer = 5;
+                timer -= Time.deltaTime;
             }
         }
         else
         {
-            timer -= Time.deltaTime;
+            Debug.Log("ShieldForced");
+            preventShoot = true;
+            isUp = true;
+            isDown = false;
+            timer = 5;
         }
+
+        /*
+        checkShieldForceUp();
+
+        if (!forceShieldUp){
+            
+        }
+        */
     }
-   void RaiseShield()
-    {
-        raising = true;
-        lowering = false;
-        finishedRaising = false;
-        finishedLowering = false;
-        preventShoot = true;
-    }
-   void LowerShield()
-    {
-        lowering = true;
-        raising = false;
-        finishedRaising = false;
-        finishedLowering = false;
-    }
+
     /** <summary>Returns true if Enemy should be unable to shoot</summary>
     */
     public bool GetPreventShoot()
@@ -90,5 +70,18 @@ public class Shield : DestructableObject
         {
             Destroy(transform.parent.gameObject);
         }
+    }
+
+    bool checkShieldForceUp()
+    {
+        EnemyWalk walkScript = gameObject.GetComponentInParent<EnemyWalk>();
+        if (walkScript!= null)
+        {
+            if (walkScript.GetForceShieldUp())
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

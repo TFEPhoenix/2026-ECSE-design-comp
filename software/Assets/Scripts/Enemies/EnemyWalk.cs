@@ -1,4 +1,3 @@
-using UnityEditor.XR;
 using UnityEngine;
 
 public class EnemyWalk : MonoBehaviour
@@ -6,11 +5,20 @@ public class EnemyWalk : MonoBehaviour
     bool isWalking = false;
     public Vector3 goal; // Final position
     public float speed; // Distance per second
-    bool preventShoot = false;
- 
+    Animator animationControl;
+
+
+    void Start()
+    {
+        animationControl = gameObject.GetComponent<Animator>();
+    }
     void Update()
     {
         if (isWalking){
+            if (animationControl != null)
+            {
+                animationControl.SetBool("Moving", true);
+            }
             Vector3 direction = goal - transform.position;
             float curSpeed = speed;
             // If close to the goal, move onto it and stop walking
@@ -25,19 +33,21 @@ public class EnemyWalk : MonoBehaviour
 
 
         }
+        else if (animationControl != null)
+        {
+            animationControl.SetBool("Moving", false);
+        }
     }
     // Called when the goal is reached
     void StoppedWalking()
     {
         isWalking = false;
-        preventShoot = false;
     }
     // Begins movement towards a new goal
     public void StartWalking(Vector3 newGoal)
     {
         goal = newGoal;
         isWalking = true;
-        preventShoot = true;
         Vector3 vectorToGoal = goal - transform.position;
         transform.rotation = Quaternion.LookRotation(new Vector3(vectorToGoal.x, 0, vectorToGoal.z));
     }
@@ -45,6 +55,15 @@ public class EnemyWalk : MonoBehaviour
     */
     public bool GetPreventShoot()
     {
-        return preventShoot;
+        return isWalking;
+    }
+
+    public bool GetForceShieldUp()
+    {
+        return isWalking;
+    }
+    public bool GetIsWalking()
+    {
+        return isWalking;
     }
 }

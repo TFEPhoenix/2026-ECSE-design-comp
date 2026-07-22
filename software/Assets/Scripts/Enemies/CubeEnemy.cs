@@ -1,5 +1,5 @@
+using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 public class CubeEnemy : MonoBehaviour, Enemy
 {
@@ -8,10 +8,14 @@ public class CubeEnemy : MonoBehaviour, Enemy
     int curHealth;
     HitFlashAllChildren HitFlashLoader;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
+    public int powerUpChance; // in percent 
+    public GameObject powerUpPrefab;
+    Animator animationControl;
     void Start()
     {
         curHealth = maxHealth;
         HitFlashLoader = gameObject.AddComponent<HitFlashAllChildren>();
+        animationControl = gameObject.GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -33,7 +37,14 @@ public class CubeEnemy : MonoBehaviour, Enemy
     }
     public void OnDeath()
     {
+        if (Random.Range(0, 101) <= powerUpChance)
+        {
+            GameObject powerUp = Instantiate(powerUpPrefab);
+            powerUp.transform.position = transform.position;
+        }
         ScoreManager.Instance.AddPlayer1Score(scoreForKill);
+        GameObject deathExplosion = Instantiate(PrefabRef.Instance.GetExplosion()); // Purely Visual
+        deathExplosion.transform.position = transform.position;
         Destroy(gameObject);
     }
 }

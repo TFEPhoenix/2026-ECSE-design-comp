@@ -1,4 +1,3 @@
-using System.Reflection.Metadata;
 using UnityEngine;
 
 public class BulletMovementSimple : EnemyBullet

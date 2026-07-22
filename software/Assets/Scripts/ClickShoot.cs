@@ -1,13 +1,10 @@
 using Unity.VisualScripting;
 using UnityEngine;
-
 using UnityEngine.InputSystem;
-using System.Collections;
 public class ClickShoot : MonoBehaviour
 {
-    public GameObject prefab;
-    public GameObject countScript;
-    public LayerMask targetLayer;
+    public GameObject bulletPrefab;
+    public LayerMask layerToIgnore;
     GameObject newObject; 
     Ray ray;
     Vector3 mousePos;
@@ -19,6 +16,8 @@ public class ClickShoot : MonoBehaviour
     {
         camera = Camera.main;
         hasAmmo = AmmoManager.Instance.player1Ammo > 0;
+        // Inverts the mask so that it functions as intended
+        layerToIgnore = ~layerToIgnore;
     }
 
     void Update()
@@ -36,19 +35,16 @@ public class ClickShoot : MonoBehaviour
             Create();
             // Transform of object that the bullet would hit - For Hitscanning
             Transform hitObjectTransform = null;
-            if (Physics.Raycast(ray, out RaycastHit hit, 200f, targetLayer))
+            Vector3 hitPoint = new Vector3(0,0,0);
+            if (Physics.Raycast(ray, out RaycastHit hit, 200f, layerMask: layerToIgnore))
             {
                 hitObjectTransform = hit.transform;
+                hitPoint = hit.point;
             }
             // If raycast hits an applicable object
             if ( !hit.transform.IsUnityNull())
             {
-                // Proccess hit on target
-                if (hitObjectTransform.gameObject.TryGetComponent<BulletHit>(out var HitScript))
-                {
-                    HitScript.OnHit();
-                    
-                }
+                ProcessHit(hitObjectTransform, hitPoint, ray);
             }
         }
     }
@@ -57,7 +53,43 @@ public class ClickShoot : MonoBehaviour
     void Create()
     {
         mousePos = Mouse.current.position.ReadValue();
-        newObject = Instantiate(prefab, ray.origin, Quaternion.LookRotation(targetDirection));
+        newObject = Instantiate(bulletPrefab, ray.origin, Quaternion.LookRotation(targetDirection));
+    }
+
+    void ProcessHit(Transform hitObjectTransform, Vector3 hitPoint, Ray ray)
+    {
+        BulletType curBulletType = AmmoManager.Instance.player1BulletType;
+        BulletHit hitScript; 
+        // Regular Hit is always processed
+        if (hitObjectTransform.gameObject.TryGetComponent(out hitScript))
+        {
+            hitScript.OnHit();
+        }
+
+        // Special Bullet types
+        if (curBulletType.Equals(BulletType.Explosive))
+        {
+            Collider[] colliders = Physics.OverlapSphere( hitPoint, AmmoManager.Instance.explosionSize);
+
+            foreach (Collider collider in colliders)
+            {
+                if (collider.TryGetComponent(out hitScript) && collider.transform != hitObjectTransform && (collider.GetComponent<PowerUp>() == null))
+                {
+                    hitScript.OnHit();
+                }
+            }
+        } else if (curBulletType.Equals(BulletType.Piercing))
+        {
+            RaycastHit[] hits = Physics.RaycastAll(hitPoint, ray.direction, 200f, layerToIgnore);
+            foreach (RaycastHit hit in hits)
+            {
+                if (hit.transform.gameObject.TryGetComponent(out hitScript) && hit.transform != hitObjectTransform)
+                {
+                    hitScript.OnHit();
+                }
+            }
+        }
+        
     }
 
 }
