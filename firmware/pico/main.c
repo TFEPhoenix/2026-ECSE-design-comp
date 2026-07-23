@@ -4,6 +4,7 @@
 
 #include "gpio_control.h"
 #include "imu_spi.h"
+#include "hid.h"
 #include "pico/multicore.h"
 #include "pico/stdlib.h"
 #include "shared_state.h"
