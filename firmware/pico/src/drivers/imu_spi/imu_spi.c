@@ -63,9 +63,7 @@ void imu_spi_init() {
 
     write_reg(REG_CTRL1_XL, 0x48); // 104 Hz normal mode, +/-8g
     write_reg(REG_CTRL2_G, 0x4C);  // 104 Hz normal mode, +/-2000dps
-    // write_reg(REG_CTRL3_C, 0x44); // bdu, if_inc
-    write_reg(REG_CTRL3_C, 0xC5); // boot, bdu, if_inc, software reset
-
+    write_reg(REG_CTRL3_C, 0xC5);  // bdu, if_inc
     sleep_ms(10);
 }
 

@@ -3,7 +3,7 @@
 #include "shared_state.h"
 #include <stdio.h>
 
-#define WAIT_PERIOD_US 1000 * 2500
+#define WAIT_PERIOD_US 1000 * 250
 
 void core1_mainloop() {
     camera_uart_init();
@@ -13,11 +13,11 @@ void core1_mainloop() {
     while (true) {
         next_sample = delayed_by_us(next_sample, WAIT_PERIOD_US);
 
-        camera_sample_t cam;
+        camera_sample_t cam = {0};
         bool have_cam = camera_uart_get_sample(&cam);
-        printf("Camera Sample: (%f, %f)", cam.col, cam.row);
+        printf("Camera Sample: (%f, %f)\n", cam.col, cam.row);
 
-        imu_sample_t imu;
+        imu_sample_t imu = {0};
         bool have_imu = imu_get_sample(&imu);
         printf("IMU Sample: acceleration: %.4f, %.4f, %.4f | gyroscope: %.4f, "
                "%.4f, %.4f | temperature: %.2f\n",
