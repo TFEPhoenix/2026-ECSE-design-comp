@@ -6,6 +6,7 @@
 #include "imu_spi.h"
 #include "pico/multicore.h"
 #include "pico/stdlib.h"
+#include "shared_state.h"
 #include <stdio.h>
 
 int main() {
@@ -22,8 +23,10 @@ int main() {
     while (true) {
         next_sample = delayed_by_us(next_sample, 1000 * 2500);
 
-        printf("\n----Core 0 just wanna be saying smth----\n");
-        printf("\n----This is where the usb should send that data now----\n");
+        shared_state_t state = shared_state_read();
+        printf("\n--CORE 0 SAMPLE:--\n");
+        printf("Data: %i %i %i %i\n\n", state.seq_number, state.trigger_pressed,
+               state.x, state.y);
 
         busy_wait_until(next_sample);
     }

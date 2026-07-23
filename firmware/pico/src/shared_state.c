@@ -18,3 +18,11 @@ void shared_state_update_trigger(bool trigger) {
     g_global_state.seq_number++;
     critical_section_exit(&g_state_lock);
 }
+
+void shared_state_update_coords(uint16_t x, uint16_t y) {
+    critical_section_enter_blocking(&g_state_lock);
+    g_global_state.x = x;
+    g_global_state.y = y;
+    g_global_state.seq_number++;
+    critical_section_exit(&g_state_lock);
+}
