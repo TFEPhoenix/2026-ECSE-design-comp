@@ -28,5 +28,5 @@ void hid_update(uint16_t x, uint16_t y, bool clicking) {
     // Click when the switch is trigger is pulled
     report.attr = clicking ? STYLUS_ATTR_TIP_SWITCH | STYLUS_ATTR_IN_RANGE : STYLUS_ATTR_IN_RANGE; 
 
-    tud_hid_report(REPORT_ID_STYLUS, &report, sizeof(report));
+    tud_hid_report(REPORT_ID_STYLUS_PEN, &report, sizeof(report));
 }

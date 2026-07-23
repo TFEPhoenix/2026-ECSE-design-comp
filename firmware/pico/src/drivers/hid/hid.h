@@ -1,3 +1,5 @@
+#include <stdint.h>
+#include <stdbool.h>
 
 // Called to start the HID
 void hid_init();
