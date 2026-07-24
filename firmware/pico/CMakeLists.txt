@@ -37,6 +37,7 @@ add_subdirectory(src/drivers/camera_uart)
 add_subdirectory(src/drivers/imu_spi)
 add_subdirectory(src/drivers/gpio_control)
 add_subdirectory(src/processing)
+add_subdirectory(src/drivers/hid)
 
 add_executable(pico
     main.c
@@ -67,6 +68,7 @@ target_link_libraries(pico
     imu_spi
     gpio_control
     filters
+    hid
 )
 
 pico_add_extra_outputs(pico)

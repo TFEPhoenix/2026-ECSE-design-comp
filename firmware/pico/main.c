@@ -4,6 +4,7 @@
 
 #include "gpio_control.h"
 #include "imu_spi.h"
+#include "hid.h"
 #include "pico/multicore.h"
 #include "pico/stdlib.h"
 #include "shared_state.h"
@@ -13,6 +14,7 @@ int main() {
     stdio_init_all();
     shared_state_init();
     io_init();
+    hid_init(); 
 
     sleep_ms(5000);
 
