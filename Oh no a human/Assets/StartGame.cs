@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.InputSystem;
 
-public class LoadKitchen : MonoBehaviour
+public class StartGame : MonoBehaviour
 {
     void Update()
     {
