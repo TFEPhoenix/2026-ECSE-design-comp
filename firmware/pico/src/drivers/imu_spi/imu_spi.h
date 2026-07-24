@@ -25,3 +25,5 @@ typedef struct {
 
 void imu_spi_init();
 bool imu_get_sample(imu_sample_t *out);
+float imu_roll_deg(const imu_sample_t *imu);
+float imu_pitch_deg(const imu_sample_t *imu);

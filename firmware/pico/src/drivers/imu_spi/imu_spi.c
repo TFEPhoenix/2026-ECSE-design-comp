@@ -2,6 +2,7 @@
 #include "hardware/gpio.h"
 #include "hardware/spi.h"
 #include "pico/stdlib.h"
+#include <math.h>
 #include <stdio.h>
 
 #define PIN_CS 1
@@ -10,6 +11,8 @@
 #define PIN_MISO 4
 #define SPI_PORT spi0
 #define CLK_FREQ 500000
+
+#define RAD_TO_DEG (180.0f / M_PI)
 
 static inline void cs_select() { gpio_put(PIN_CS, 0); }
 static inline void cs_deselect() { gpio_put(PIN_CS, 1); }
@@ -154,4 +157,14 @@ static void calibrate_gyro() {
 
     printf("Gyro calibration complete, calculated bias: %.3f %.3f %.3f dps\n",
            gyro_bias[0], gyro_bias[1], gyro_bias[2]);
+}
+
+float imu_roll_deg(const imu_sample_t *imu) {
+    return atan2f(imu->accel_g[1], imu->accel_g[2]) * RAD_TO_DEG;
+}
+
+float imu_pitch_deg(const imu_sample_t *imu) {
+    return atan2f(-imu->accel_g[0], sqrtf(imu->accel_g[1] * imu->accel_g[1] +
+                                          imu->accel_g[2] * imu->accel_g[2])) *
+           RAD_TO_DEG;
 }
