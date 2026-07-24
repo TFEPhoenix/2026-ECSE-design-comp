@@ -69,8 +69,12 @@ public class ClickShoot : MonoBehaviour
         // Special Bullet types
         if (curBulletType.Equals(BulletType.Explosive))
         {
-            Collider[] colliders = Physics.OverlapSphere( hitPoint, AmmoManager.Instance.explosionSize);
+            // Summon an explosion effect  where the bullet lands
+            GameObject deathExplosion = Instantiate(PrefabRef.Instance.GetExplosion()); // Purely Visual
+            deathExplosion.transform.position = hitPoint;
 
+
+            Collider[] colliders = Physics.OverlapSphere( hitPoint, AmmoManager.Instance.explosionSize);
             foreach (Collider collider in colliders)
             {
                 if (collider.TryGetComponent(out hitScript) && collider.transform != hitObjectTransform && (collider.GetComponent<PowerUp>() == null))

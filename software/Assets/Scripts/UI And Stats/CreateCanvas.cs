@@ -19,7 +19,5 @@ public class CreateCanvas : MonoBehaviour
 
         // Add GraphicRaycaster (for buttons/interactions)
         canvasObject.AddComponent<GraphicRaycaster>();
-
-        Debug.Log("Canvas Created!");
     }
 }

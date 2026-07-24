@@ -44,5 +44,6 @@ public class AmmoManager : MonoBehaviour
     {
         Debug.Log(type);
         player1BulletType = type;
+        AmmoDisplay.Instance.UpdateAmmoType(type);
     }
 }

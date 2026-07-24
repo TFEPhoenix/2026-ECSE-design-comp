@@ -125,7 +125,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 531417bc27078db4fbb122c6cf487199, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyShoot
-  bulletPrefab: {fileID: 7927301433722323253, guid: 6038fcd76cda28347a9194e55fcb1d5b, type: 3}
+  bulletPrefab: {fileID: 4364507645674179900, guid: a5ae5185862ef4e49857c03e5c4296b8, type: 3}
   turnSpeed: 90
   maxShotCooldown: 3
   canShoot: 0

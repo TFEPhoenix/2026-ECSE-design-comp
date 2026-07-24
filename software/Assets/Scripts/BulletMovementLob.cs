@@ -28,5 +28,6 @@ public class BulletMovementLob : EnemyBullet
         CheckHit();
         velocity.y -= gravity * Time.deltaTime;
         transform.position += velocity * Time.deltaTime;
+        transform.rotation = Quaternion.LookRotation(velocity);
     }
 }

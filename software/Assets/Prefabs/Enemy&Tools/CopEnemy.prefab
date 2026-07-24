@@ -312,7 +312,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HumanEnemy
   scoreForKill: 120
   maxHealth: 3
-  powerUpChance: 8
+  powerUpChance: 100
 --- !u!1 &838203856876315666
 GameObject:
   m_ObjectHideFlags: 0

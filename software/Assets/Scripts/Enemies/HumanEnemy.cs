@@ -15,16 +15,16 @@ public class HumanEnemy : MonoBehaviour, Enemy
         curHealth = maxHealth;
         HitFlashLoader = gameObject.AddComponent<HitFlashAllChildren>();
         animationControl = gameObject.GetComponent<Animator>();
+        // Check if has Shield
         if (gameObject.GetComponentInChildren<Shield>() != null)
         {
             animationControl.SetBool("Shield", true);
         }
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        if (gameObject.GetComponentInChildren<EnemyShoot>().gameObject.name == "LobberGun")
+        {
+            animationControl.SetBool("Cannon", true);
+            animationControl.SetBool("Pistol", false);
+        }
     }
 
     public void OnHit()
@@ -40,14 +40,23 @@ public class HumanEnemy : MonoBehaviour, Enemy
     }
     public void OnDeath()
     {
+        // Spawn a powerup on chance
         if (Random.Range(0, 101) <= powerUpChance)
         {
             GameObject powerUp = Instantiate(PrefabRef.Instance.GetPowerUp());
-            powerUp.transform.position = transform.position;
+            powerUp.transform.position = transform.Find("Root/Hips/Spine_01/Spine_02/Spine_03").position;
         }
+        // Give Player score and increase multiplier
         ScoreManager.Instance.AddPlayer1Score(scoreForKill);
-        GameObject deathExplosion = Instantiate(PrefabRef.Instance.GetExplosion()); // Purely Visual
-        deathExplosion.transform.position = transform.position;
+        if (ScoreManager.Instance.GetScorePause() <= 2)
+        {
+            ScoreManager.Instance.IncreaseMult();
+        }
+
+        // Spawn purely Visual explosion
+        GameObject deathExplosion = Instantiate(PrefabRef.Instance.GetExplosion());
+        deathExplosion.transform.position = transform.Find("Root/Hips/Spine_01/Spine_02/Spine_03").position;
+        // Destroy the Enemy
         Destroy(gameObject);
     }
 }

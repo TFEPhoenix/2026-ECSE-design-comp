@@ -4,9 +4,23 @@ using UnityEngine.UI;
 
 public class AmmoDisplay : MonoBehaviour
 {
+    public static AmmoDisplay Instance;
     private TextMeshProUGUI player1AmmoText;
     private TextMeshProUGUI player2AmmoText;
+    Image player1BulletIcon;
 
+
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
     void Start()
     {
         Debug.Log("AmmoDisplay Started");
@@ -39,15 +53,6 @@ public class AmmoDisplay : MonoBehaviour
         }
 
 
-        if (bulletSprite == null)
-        {
-            Debug.LogError("Bullet sprite failed to load!");
-        }
-        else
-        {
-            Debug.Log("Bullet sprite loaded: " + bulletSprite.name);
-        }
-
 
 
         // Create Player 1 Ammo
@@ -58,7 +63,7 @@ public class AmmoDisplay : MonoBehaviour
         );
 
 
-        CreateBulletIcon(
+        player1BulletIcon = CreateBulletIcon(
             canvas.transform,
             "P1BulletIcon",
             new Vector2(0.46f, 0.1f),
@@ -121,7 +126,7 @@ public class AmmoDisplay : MonoBehaviour
 
 
 
-    void CreateBulletIcon(
+    Image CreateBulletIcon(
         Transform parent,
         string name,
         Vector2 anchor,
@@ -153,7 +158,8 @@ public class AmmoDisplay : MonoBehaviour
         rect.anchorMin = anchor;
         rect.anchorMax = anchor;
 
-        rect.sizeDelta = new Vector2(40, 40);
+        rect.sizeDelta = new Vector2(120, 120);
+        return image;
     }
 
     void Update()
@@ -182,5 +188,23 @@ public class AmmoDisplay : MonoBehaviour
             AmmoManager.Instance.player2MaxAmmo;
     }
 
+    public void UpdateAmmoType(BulletType current)
+    {
+        if (current == BulletType.Explosive)
+        {
+            Debug.Log("Change to explosive");
+            player1BulletIcon.sprite = Resources.Load<Sprite>("HorriblyDrawnPixilart/Explosion");
+        }
+        else if(current == BulletType.Piercing)
+        {
+            player1BulletIcon.sprite = Resources.Load<Sprite>("HorriblyDrawnPixilart/PierceBullet");
+        }
+        else
+        {
+            player1BulletIcon.sprite = Resources.Load<Sprite>("HorriblyDrawnPixilart/RedTippedBullet");
+        }
+        
+
+    }
 
 }

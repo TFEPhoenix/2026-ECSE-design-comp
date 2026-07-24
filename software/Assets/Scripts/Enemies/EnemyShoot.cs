@@ -9,10 +9,19 @@ public class EnemyShoot : MonoBehaviour
     public bool canShoot = false; // Used to prevent shooting while moving, not related to cooldown
     Animator animationControl;
     GameObject root;
+    Renderer renderer;
+    Color originalColor;
+    Color chargeColour = Color.yellow;
+    float chargeWarningLength = 3; 
 
     void Start()
     {
+        // For Showing when a shot will occur
+        renderer = gameObject.GetComponent<Renderer>();
+        originalColor = renderer.material.color;
+
         curShotCooldown = maxShotCooldown;
+        // Used for Controlling animations of Enemy up the tree
         animationControl = gameObject.GetComponentInParent<Animator>();
         root = animationControl.gameObject;
         if (root == null)
@@ -51,15 +60,22 @@ public class EnemyShoot : MonoBehaviour
             {
                 onShoot();
                 curShotCooldown = maxShotCooldown;
+                renderer.material.color = originalColor;
             }
             else
             {
                 curShotCooldown -= Time.deltaTime;
+                if (curShotCooldown <= chargeWarningLength)
+                {
+                    // Turn orange over three seconds
+                    renderer.material.color = Color.Lerp(originalColor, chargeColour,  1 - (curShotCooldown / chargeWarningLength));
+                }
             }
             
         }
         else
         {
+            renderer.material.color = originalColor;
             if (animationControl != null)
             {
                 animationControl.SetBool("Aiming", false);

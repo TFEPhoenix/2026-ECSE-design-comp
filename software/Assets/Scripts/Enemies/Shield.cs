@@ -5,7 +5,8 @@ public class Shield : DestructableObject
 
 
     bool preventShoot = false;
-    float timer = 5;
+    public float raiseSwitchTimer = 5;
+    float timer;
     Animator animationControl;
     GameObject root;
     bool isUp = false;
@@ -13,6 +14,7 @@ public class Shield : DestructableObject
     
     void Start()
     {
+        timer = raiseSwitchTimer;
         animationControl = gameObject.GetComponentInParent<Animator>();
         root = animationControl.gameObject;
         if (root == null)
@@ -30,8 +32,7 @@ public class Shield : DestructableObject
                 isUp = !isUp;
                 isDown = !isDown;
                 preventShoot = !preventShoot;
-                timer = 5;
-                Debug.Log(preventShoot);
+                timer = raiseSwitchTimer;
             }
             else
             {
@@ -40,20 +41,12 @@ public class Shield : DestructableObject
         }
         else
         {
-            Debug.Log("ShieldForced");
             preventShoot = true;
             isUp = true;
             isDown = false;
             timer = 5;
         }
 
-        /*
-        checkShieldForceUp();
-
-        if (!forceShieldUp){
-            
-        }
-        */
     }
 
     /** <summary>Returns true if Enemy should be unable to shoot</summary>
@@ -68,7 +61,8 @@ public class Shield : DestructableObject
         health-=1;
         if (health <= 0)
         {
-            Destroy(transform.parent.gameObject);
+            animationControl.SetBool("Shield", false);
+            Destroy(gameObject);
         }
     }
 

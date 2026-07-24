@@ -128,11 +128,10 @@ public class LivesDisplay : MonoBehaviour
 
             // Spread hearts horizontally
             rect.anchoredPosition =
-                new Vector2((i - 1) * 45, 0);
-
+                new Vector2((i - 1) * 75, 0);
 
             rect.sizeDelta =
-                new Vector2(40, 40);
+                new Vector2(70, 70);
 
 
             hearts[i] = image;
