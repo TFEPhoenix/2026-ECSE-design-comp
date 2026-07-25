@@ -2,9 +2,9 @@
 #include "shared_state.h"
 #include <stdio.h>
 
+#include "camera_uart.h"
 #include "gpio_control.h"
 #include "imu_spi.h"
-#include "hid.h"
 #include "pico/multicore.h"
 #include "pico/stdlib.h"
 #include "shared_state.h"
@@ -12,24 +12,23 @@
 
 int main() {
     stdio_init_all();
-    shared_state_init();
-    io_init();
-    hid_init(); 
 
-    sleep_ms(5000);
+    io_init();
+    shared_state_init();
+
+    sleep_ms(5000); // gives enough time to open screen after flashing
 
     multicore_launch_core1(core1_mainloop);
 
     absolute_time_t next_sample = get_absolute_time();
 
     while (true) {
-        next_sample = delayed_by_us(next_sample, 1000 * 2500);
-
         shared_state_t state = shared_state_read();
-        printf("\n--CORE 0 SAMPLE:--\n");
-        printf("Data: %i %i %i %i\n\n", state.seq_number, state.trigger_pressed,
-               state.x, state.y);
+        printf("Core 0 Sample: Sequence #: %i, Trigger Pressed: %i, x: %i, y: "
+               "%i\n\n",
+               state.seq_number, state.trigger_pressed, state.x, state.y);
 
+        next_sample = delayed_by_us(next_sample, 1000 * 2500);
         busy_wait_until(next_sample);
     }
 }
