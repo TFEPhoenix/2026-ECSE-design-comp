@@ -1,59 +1,99 @@
 #include "camera_uart.h"
-#include "filters.h"
 #include "imu_spi.h"
 #include "one_euro_filter.h"
+#include "orientation_filter.h"
+#include "pico/stdlib.h"
 #include "shared_state.h"
 #include <math.h>
 #include <stdio.h>
 
 #define WAIT_PERIOD_US 1000
-#define FILTER_ALPHA 0.98f
+#define ORIENTATION_ALPHA 0.98f
 
-static float angle_deg[3] = {0};
+#define DEG_TO_RAD (float)(M_PI / 180.0)
+
+static float W_real = 0.60f;
+static float H_real = 0.34f;
+
+#define PRINT_EVERY_N 200
 
 void core1_mainloop() {
-    imu_spi_init();
     camera_uart_init();
+    imu_spi_init();
 
-    imu_sample_t imu = {0};
-    camera_sample_t cam = {0};
+    orientation_filter_t orient;
+    orientation_filter_init(&orient, ORIENTATION_ALPHA);
 
-    float roll = 0;
-    float pitch = 0;
+    one_euro_filter_t filter_u, filter_v;
+
+    one_euro_init(&filter_u, 1.0f, 0.02f, 1.0f);
+    one_euro_init(&filter_v, 1.0f, 0.02f, 1.0f);
 
     const float dt = WAIT_PERIOD_US / 1e6f;
+
+    float last_cam_u = 0.5f;
+    float last_cam_v = 0.5f;
+    float D_current = 1.0f;
+
+    uint32_t loop_count = 0;
     absolute_time_t next_sample = get_absolute_time();
 
-    one_euro_filter_t roll_filter;
-    one_euro_init(&roll_filter, 1.5, 0.5, 1);
-
-    one_euro_filter_t pitch_filter;
-    one_euro_init(&pitch_filter, 1.5, 0.5, 1);
-
     while (true) {
-        bool have_cam = camera_uart_get_sample(&cam);
-        if (have_cam) {
-            printf("Camera Sample: (%f, %f)\n", cam.col, cam.row);
-        }
-
-        bool have_imu = imu_get_sample(&imu);
-        if (have_imu) {
-            angle_deg[0] += imu.gyro_dps[0] * dt;
-            angle_deg[1] += imu.gyro_dps[1] * dt;
-            angle_deg[2] += imu.gyro_dps[2] * dt;
-            
-            roll = complementary_filter(
-                FILTER_ALPHA, roll, imu.gyro_dps[0] * dt, imu_roll_deg(&imu));
-            pitch = complementary_filter(
-                FILTER_ALPHA, pitch, imu.gyro_dps[1] * dt, imu_pitch_deg(&imu));
-
-            // just trying to test out one euro filter, in actual case ill apply at the end of cam+imu
-            printf("Roll: %+.4f | ", one_euro_filter(&roll_filter, roll, dt));
-            printf("Pitch: %+.4f | ", one_euro_filter(&pitch_filter, pitch, dt));
-            printf("Yaw: %+.4f\n", angle_deg[2]);
-        }
-
         next_sample = delayed_by_us(next_sample, WAIT_PERIOD_US);
+        loop_count++;
+
+        camera_sample_t cam = {0};
+        if (camera_uart_get_sample(&cam) && cam.found) {
+            last_cam_u = cam.col;
+            last_cam_v = cam.row;
+            D_current = cam.dist_m;
+
+            orientation_filter_reset(
+                &orient); // camera gives us the truth we can reset imu shit
+
+            if (loop_count % PRINT_EVERY_N == 0) {
+                printf("CAM correction: u=%.4f v=%.4f D=%.3fm\n", last_cam_u,
+                       last_cam_v, D_current);
+            }
+        }
+
+        imu_sample_t imu = {0};
+        if (imu_get_sample(&imu)) {
+            orientation_filter_update(&orient, &imu, dt);
+
+            float yaw_rad = orient.yaw_deg * DEG_TO_RAD;
+            float pitch_rad = orient.pitch_deg * DEG_TO_RAD;
+
+            float du = -(D_current * yaw_rad) / W_real;
+            float dv = (D_current * pitch_rad) / H_real;
+
+            float predicted_u = last_cam_u + du;
+            float predicted_v = last_cam_v + dv;
+
+            float smooth_u = one_euro_filter(&filter_u, predicted_u, dt);
+            float smooth_v = one_euro_filter(&filter_v, predicted_v, dt);
+
+            // clamp to the screen edges
+            if (smooth_u < 0.0f)
+                smooth_u = 0.0f;
+            if (smooth_u > 1.0f)
+                smooth_u = 1.0f;
+            if (smooth_v < 0.0f)
+                smooth_v = 0.0f;
+            if (smooth_v > 1.0f)
+                smooth_v = 1.0f;
+
+            uint16_t x = (uint16_t)(smooth_u * 32767.0f);
+            uint16_t y = (uint16_t)(smooth_v * 32767.0f);
+
+            shared_state_update_coords(x, y);
+
+            if (loop_count % PRINT_EVERY_N == 0) {
+                printf("cursor: u=%.4f v=%.4f -> x=%u y=%u\n", smooth_u,
+                       smooth_v, x, y);
+            }
+        }
+
         busy_wait_until(next_sample);
     }
 }
