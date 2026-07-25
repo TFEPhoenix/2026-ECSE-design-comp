@@ -4,6 +4,7 @@
 #include "esp_camera.h"
 #include "freertos/FreeRTOS.h"
 #include "homography.h"
+#include <math.h>
 #include <string.h>
 
 #define UART_TX 13
@@ -11,7 +12,11 @@
 #define UART_PORT UART_NUM_1
 #define BUF_SIZE 1024
 
-bool init_uart();
+#define CAMERA_FOCAL_PX 246.0f // using the ol' formula f = d/2tan(fov/2)
+#define LED_TOP_WIDTH_M 0.60f // distance between tl and tr in m
+
+static bool init_uart();
+static float estimate_distance_m(blob_t corners[4]);
 
 void app_main(void) {
     if (!init_uart()) {
@@ -25,6 +30,7 @@ void app_main(void) {
     camera_fb_t *fb;
     point_t position = {0};
     blob_t best[4];
+    float distance_m = 1.0f;
 
     while (1) {
         fb = esp_camera_fb_get();
@@ -40,18 +46,19 @@ void app_main(void) {
             homography_t h_inv = invert_homography(h);
 
             position = apply_homography(&h_inv, center);
+            distance_m = estimate_distance_m(best);
         }
 
         char message[256];
-        sprintf(message, "POS,%.4f,%.4f,%d\n", position.col, position.row,
-                found ? 1 : 0);
+        sprintf(message, "POS,%.4f,%.4f,%d,%.4f\n", position.col, position.row,
+                found ? 1 : 0, distance_m);
 
         uart_write_bytes(UART_PORT, message, strlen(message));
         esp_camera_fb_return(fb);
     }
 }
 
-bool init_uart() {
+static bool init_uart() {
     uart_config_t uart_config = {
         .baud_rate = 115200,
         .data_bits = UART_DATA_8_BITS,
@@ -67,4 +74,16 @@ bool init_uart() {
     esp_err_t e3 = uart_set_pin(UART_PORT, UART_TX, UART_RX, -1, -1);
 
     return e1 == ESP_OK && e2 == ESP_OK && e3 == ESP_OK;
+}
+
+static float estimate_distance_m(blob_t corners[4]) {
+    float dx = corners[TOP_RIGHT].col - corners[TOP_LEFT].col;
+    float dy = corners[TOP_RIGHT].row - corners[TOP_LEFT].row;
+    float pixel_spacing = sqrtf(dx * dx + dy * dy);
+
+    if (pixel_spacing < 1.0f) {
+        pixel_spacing = 1.0f;
+    }
+
+    return CAMERA_FOCAL_PX * LED_TOP_WIDTH_M / pixel_spacing;
 }
