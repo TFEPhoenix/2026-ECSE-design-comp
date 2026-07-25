@@ -1,5 +1,5 @@
 add_library(filters STATIC
-    filters.c
+    complementary_filter.c one_euro_filter.c orientation_filter.c
 )
 target_include_directories(filters PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 target_link_libraries(filters PUBLIC pico_stdlib)
