@@ -67,8 +67,8 @@ void imu_spi_init() {
     uint8_t who = read_reg(REG_WHO_AM_I);
     printf("\nWHOAMI: %x\n", who);
 
-    write_reg(REG_CTRL1_XL, 0x48); // 104 Hz normal mode, +/-8g
-    write_reg(REG_CTRL2_G, 0x4C);  // 104 Hz normal mode, +/-2000dps
+    write_reg(REG_CTRL1_XL, 0x78); // 833 Hz , +/-8g
+    write_reg(REG_CTRL2_G, 0x7C);  // 833 Hz, +/-2000dps
     write_reg(REG_CTRL3_C, 0x44);  // bdu, if_inc
 
     sleep_ms(200);
