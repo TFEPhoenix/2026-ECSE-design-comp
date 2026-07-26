@@ -8,6 +8,27 @@
 
 #include "usb_descriptors.h"
 
+
+
+// Invoked when received GET_REPORT control request
+uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t* buffer, uint16_t reqlen) {
+    (void) instance;
+    (void) report_id;
+    (void) report_type;
+    (void) buffer;
+    (void) reqlen;
+    return 0;
+}
+
+// Invoked when received SET_REPORT control request
+void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize) {
+    (void) instance;
+    (void) report_id;
+    (void) report_type;
+    (void) buffer;
+    (void) bufsize;
+} 
+
 void hid_init(void) {
     board_init();
 
@@ -16,17 +37,24 @@ void hid_init(void) {
     tusb_init(BOARD_TUD_RHPORT, &dev_init);
 
     board_init_after_tusb();
+
+    tud_hid_abs_mouse_report(REPORT_ID_MOUSE, 0x00, 16383, 16383, 0, 0);
 }
 
-void hid_update(uint16_t x, uint16_t y, bool clicking) {
+void hid_update(int16_t x, int16_t y, bool clicking) {
     if (!tud_hid_ready()) return;
 
-    hid_stylus_report_t report;
-    report.x = x;
-    report.y = y;
-    
-    // Click when the switch is trigger is pulled
-    report.attr = clicking ? STYLUS_ATTR_TIP_SWITCH | STYLUS_ATTR_IN_RANGE : STYLUS_ATTR_IN_RANGE; 
+    uint8_t button = clicking ? 0x01 : 0x00;
 
-    tud_hid_report(REPORT_ID_STYLUS_PEN, &report, sizeof(report));
+
+    tud_hid_abs_mouse_report(REPORT_ID_MOUSE, button, x, y, 0, 0);
+}
+void hid_test(void){
+    int16_t x[5] = {0, 32767, 0, 32767, 16383};
+    int16_t y[5] = {0, 0, 32767, 32767, 16383};
+
+    static uint8_t i = 0;
+    hid_update(x[i], y[i], false);
+    i++;
+    if (i > 4) i = 0;
 }

@@ -23,13 +23,16 @@ int main() {
     absolute_time_t next_sample = get_absolute_time();
 
     while (true) {
-        next_sample = delayed_by_us(next_sample, 1000 * 2500);
+        // next_sample = delayed_by_us(next_sample, 1000 * 2500);
 
-        shared_state_t state = shared_state_read();
-        printf("\n--CORE 0 SAMPLE:--\n");
-        printf("Data: %i %i %i %i\n\n", state.seq_number, state.trigger_pressed,
-               state.x, state.y);
+        // shared_state_t state = shared_state_read();
+        // printf("\n--CORE 0 SAMPLE:--\n");
+        // printf("Data: %i %i %i %i\n\n", state.seq_number, state.trigger_pressed,
+        //        state.x, state.y);
 
-        busy_wait_until(next_sample);
+        // busy_wait_until(next_sample);
+
+        tud_task();
+        hid_test();
     }
 }
