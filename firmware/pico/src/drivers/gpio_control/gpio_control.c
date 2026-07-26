@@ -5,64 +5,66 @@
 
 #define ON_TIME_MS 50
 #define OFF_TIME_MS 20
+#define DEBOUNCE_MS 15
 
 #define SWITCH_PIN 11
 #define SOLENOID_PIN 10
 
-#define DEBOUNCE_DELAY_MS 100
+typedef enum { GUN_IDLE, GUN_FIRING_ON, GUN_FIRING_OFF } gun_state_t;
 
-static volatile bool firing = false;
-static bool solenoid_on = false;
-absolute_time_t last_debounce_time;
+static repeating_timer_t g_timer;
+static gun_state_t g_state = GUN_IDLE;
+static uint32_t g_state_time_ms = 0;
+static uint32_t g_press_time_ms = 0;
 
-static void solenoid_deactivate() {
-    solenoid_on = false;
-    // shared_state_update_trigger(false);
-    gpio_put(SOLENOID_PIN, 0);
-}
+static bool timer_callback(repeating_timer_t *rt) {
+    bool raw_pressed = gpio_get(SWITCH_PIN);
 
-static void solenoid_activate() {
-    solenoid_on = true;
-    // shared_state_update_trigger(true);
-    gpio_put(SOLENOID_PIN, 1);
-}
-
-static int64_t solenoid_alarm(alarm_id_t id, void *user_data) {
-    if (!gpio_get(SWITCH_PIN)) {
-        firing = false;
-        shared_state_update_trigger(false);
-        solenoid_deactivate();
-        return 0;
-    }
-    if (solenoid_on) {
-        solenoid_deactivate();
-        return OFF_TIME_MS * 1000;
+    if (raw_pressed) {
+        if (g_press_time_ms < 100)
+            g_press_time_ms += 5;
     } else {
-        solenoid_activate();
-        return ON_TIME_MS * 1000;
+        g_press_time_ms = 0;
     }
-}
 
-static void switch_gpio_callback(uint gpio, uint32_t events) {
-    if (gpio != SWITCH_PIN)
-        return;
+    bool debounced_pressed = (g_press_time_ms >= DEBOUNCE_MS);
 
-    if ((events & GPIO_IRQ_EDGE_RISE) && !firing) {
-        int64_t elapsed_us =
-            absolute_time_diff_us(last_debounce_time, get_absolute_time());
-        if (elapsed_us > (DEBOUNCE_DELAY_MS * 1000)) {
-            firing = true;
+    switch (g_state) {
+    case GUN_IDLE:
+        if (debounced_pressed) {
+            gpio_put(SOLENOID_PIN, 1);
             shared_state_update_trigger(true);
-            solenoid_activate();
-            add_alarm_in_ms(ON_TIME_MS, solenoid_alarm, NULL, false);
+            g_state = GUN_FIRING_ON;
+            g_state_time_ms = 0;
         }
+        break;
+
+    case GUN_FIRING_ON:
+        g_state_time_ms += 5;
+        if (g_state_time_ms >= ON_TIME_MS) {
+            gpio_put(SOLENOID_PIN, 0);
+            shared_state_update_trigger(false);
+            g_state = GUN_FIRING_OFF;
+            g_state_time_ms = 0;
+        }
+        break;
+
+    case GUN_FIRING_OFF:
+        g_state_time_ms += 5;
+        if (g_state_time_ms >= OFF_TIME_MS) {
+            if (debounced_pressed) {
+                gpio_put(SOLENOID_PIN, 1);
+                shared_state_update_trigger(true);
+                g_state = GUN_FIRING_ON;
+                g_state_time_ms = 0;
+            } else {
+                g_state = GUN_IDLE;
+            }
+        }
+        break;
     }
 
-    if (events & GPIO_IRQ_EDGE_FALL) {
-        firing = false;
-        shared_state_update_trigger(false);
-        solenoid_deactivate();
-    }
+    return true;
 }
 
 void io_init() {
@@ -72,10 +74,9 @@ void io_init() {
 
     gpio_init(SWITCH_PIN);
     gpio_set_dir(SWITCH_PIN, GPIO_IN);
-    shared_state_update_trigger(false);
-    gpio_set_irq_enabled_with_callback(SWITCH_PIN,
-                                       GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE,
-                                       true, switch_gpio_callback);
+    gpio_pull_down(SWITCH_PIN);
 
-    last_debounce_time = get_absolute_time();
+    shared_state_update_trigger(false);
+
+    add_repeating_timer_ms(-5, timer_callback, NULL, &g_timer);
 }
