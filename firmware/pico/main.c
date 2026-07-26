@@ -4,6 +4,7 @@
 
 #include "camera_uart.h"
 #include "gpio_control.h"
+#include "hid.h"
 #include "imu_spi.h"
 #include "pico/multicore.h"
 #include "pico/stdlib.h"
@@ -30,10 +31,9 @@ int main() {
 
         tud_task();
         hid_update(state.x, state.y, state.trigger_pressed);
-      
-        next_sample = delayed_by_us(next_sample, 1000 * 2500);
+
+        next_sample = delayed_by_us(next_sample, 1000);
 
         busy_wait_until(next_sample);
-
     }
 }

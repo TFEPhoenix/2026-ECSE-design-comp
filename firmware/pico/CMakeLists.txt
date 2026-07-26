@@ -32,7 +32,7 @@ add_subdirectory(src/drivers/camera_uart)
 add_subdirectory(src/drivers/imu_spi)
 add_subdirectory(src/drivers/gpio_control)
 add_subdirectory(src/processing)
-# add_subdirectory(src/drivers/hid)
+add_subdirectory(src/drivers/hid)
 
 add_executable(pico
     main.c
@@ -44,7 +44,7 @@ pico_set_program_name(pico "pico")
 pico_set_program_version(pico "0.1")
 
 pico_enable_stdio_uart(pico 0)
-pico_enable_stdio_usb(pico 1) # for testing purposes ill leave this on until phoenix adds his tinyusb code
+pico_enable_stdio_usb(pico 0) # for testing purposes ill leave this on until phoenix adds his tinyusb code
 
 target_include_directories(pico PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
@@ -64,7 +64,7 @@ target_link_libraries(pico
     imu_spi
     gpio_control
     filters
-    # hid
+    hid
 )
 
 pico_add_extra_outputs(pico)
