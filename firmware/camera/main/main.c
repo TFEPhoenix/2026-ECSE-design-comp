@@ -13,7 +13,7 @@
 #define BUF_SIZE 1024
 
 #define CAMERA_FOCAL_PX 246.0f // using the ol' formula f = d/2tan(fov/2)
-#define LED_TOP_WIDTH_M 0.60f // distance between tl and tr in m
+#define LED_TOP_WIDTH_M 0.50f // distance between tl and tr in m
 
 static bool init_uart();
 static float estimate_distance_m(blob_t corners[4]);
