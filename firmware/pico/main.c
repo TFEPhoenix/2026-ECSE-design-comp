@@ -28,7 +28,12 @@ int main() {
                "%i\n\n",
                state.seq_number, state.trigger_pressed, state.x, state.y);
 
+        tud_task();
+        hid_update(state.x, state.y, state.trigger_pressed);
+      
         next_sample = delayed_by_us(next_sample, 1000 * 2500);
+
         busy_wait_until(next_sample);
+
     }
 }
