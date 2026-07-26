@@ -9,24 +9,28 @@
 #define SWITCH_PIN 11
 #define SOLENOID_PIN 10
 
+#define DEBOUNCE_DELAY_MS 100
+
 static volatile bool firing = false;
 static bool solenoid_on = false;
+absolute_time_t last_debounce_time;
 
 static void solenoid_deactivate() {
     solenoid_on = false;
-    shared_state_update_trigger(false);
+    // shared_state_update_trigger(false);
     gpio_put(SOLENOID_PIN, 0);
 }
 
 static void solenoid_activate() {
     solenoid_on = true;
-    shared_state_update_trigger(true);
+    // shared_state_update_trigger(true);
     gpio_put(SOLENOID_PIN, 1);
 }
 
 static int64_t solenoid_alarm(alarm_id_t id, void *user_data) {
     if (!gpio_get(SWITCH_PIN)) {
         firing = false;
+        shared_state_update_trigger(false);
         solenoid_deactivate();
         return 0;
     }
@@ -44,13 +48,19 @@ static void switch_gpio_callback(uint gpio, uint32_t events) {
         return;
 
     if ((events & GPIO_IRQ_EDGE_RISE) && !firing) {
-        firing = true;
-        solenoid_activate();
-        add_alarm_in_ms(ON_TIME_MS, solenoid_alarm, NULL, false);
+        int64_t elapsed_us =
+            absolute_time_diff_us(last_debounce_time, get_absolute_time());
+        if (elapsed_us > (DEBOUNCE_DELAY_MS * 1000)) {
+            firing = true;
+            shared_state_update_trigger(true);
+            solenoid_activate();
+            add_alarm_in_ms(ON_TIME_MS, solenoid_alarm, NULL, false);
+        }
     }
 
     if (events & GPIO_IRQ_EDGE_FALL) {
         firing = false;
+        shared_state_update_trigger(false);
         solenoid_deactivate();
     }
 }
@@ -66,4 +76,6 @@ void io_init() {
     gpio_set_irq_enabled_with_callback(SWITCH_PIN,
                                        GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE,
                                        true, switch_gpio_callback);
+
+    last_debounce_time = get_absolute_time();
 }
