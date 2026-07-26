@@ -8,7 +8,9 @@ using UnityEngine.InputSystem;
 public class ContinueManager : MonoBehaviour
 {
     private Image fadeImage;
+
     private Image continueImage;
+    private Image continueWhiteImage;
     private Image gameOverImage;
 
     private TextMeshProUGUI countdownText;
@@ -30,7 +32,7 @@ public class ContinueManager : MonoBehaviour
 
 
         // =========================
-        // BLACK OVERLAY
+        // BLACK FADE SCREEN
         // =========================
 
         GameObject panel = new GameObject("ContinueFade");
@@ -45,45 +47,50 @@ public class ContinueManager : MonoBehaviour
         fadeRect.offsetMin = Vector2.zero;
         fadeRect.offsetMax = Vector2.zero;
 
-        fadeImage.color = new Color(0f, 0f, 0f, 0f);
+        fadeImage.color = new Color(0, 0, 0, 0);
 
 
 
         // =========================
-        // CONTINUE IMAGE
+        // BLACK CONTINUE IMAGE
         // =========================
 
-        GameObject continueObject = new GameObject("ContinueImage");
-        continueObject.transform.SetParent(canvas.transform, false);
+        continueImage = CreateImage(
+            "ContinueImage",
+            canvas.transform,
+            "HorriblyDrawnPixilart/Continue"
+        );
 
-        continueImage = continueObject.AddComponent<Image>();
-
-        RectTransform continueRect = continueObject.GetComponent<RectTransform>();
-
-        continueRect.anchorMin = new Vector2(0.5f, 0.5f);
-        continueRect.anchorMax = new Vector2(0.5f, 0.5f);
-        continueRect.anchoredPosition = new Vector2(0, 100);
-
-        continueRect.sizeDelta = new Vector2(600, 300);
-
-
-        Sprite continueSprite = Resources.Load<Sprite>("HorriblyDrawnPixilart/Continue");
-
-        if (continueSprite != null)
-        {
-            continueImage.sprite = continueSprite;
-        }
-        else
-        {
-            Debug.LogError("Continue.png not found!");
-        }
+        continueImage.GetComponent<RectTransform>().anchoredPosition =
+            new Vector2(0, 100);
 
         continueImage.enabled = false;
 
 
 
         // =========================
-        // TIMER TEXT
+        // WHITE CONTINUE IMAGE
+        // =========================
+
+        continueWhiteImage = CreateImage(
+            "ContinueWhiteImage",
+            canvas.transform,
+            "HorriblyDrawnPixilart/Continue_white"
+        );
+
+        continueWhiteImage.GetComponent<RectTransform>().anchoredPosition =
+            new Vector2(0, 100);
+
+
+        continueWhiteImage.color =
+            new Color(1, 1, 1, 0);
+
+        continueWhiteImage.enabled = false;
+
+
+
+        // =========================
+        // COUNTDOWN TEXT
         // =========================
 
         GameObject textObject = new GameObject("ContinueTimer");
@@ -91,19 +98,19 @@ public class ContinueManager : MonoBehaviour
 
         countdownText = textObject.AddComponent<TextMeshProUGUI>();
 
-        RectTransform textRect = textObject.GetComponent<RectTransform>();
+        RectTransform textRect =
+            textObject.GetComponent<RectTransform>();
 
         textRect.anchorMin = new Vector2(0.5f, 0.5f);
         textRect.anchorMax = new Vector2(0.5f, 0.5f);
 
         textRect.anchoredPosition = new Vector2(0, -150);
-
         textRect.sizeDelta = new Vector2(400, 100);
 
 
         countdownText.alignment = TextAlignmentOptions.Center;
         countdownText.fontSize = 60;
-        countdownText.color = Color.black;
+        countdownText.color = Color.white;
         countdownText.text = "";
 
 
@@ -112,41 +119,62 @@ public class ContinueManager : MonoBehaviour
         // GAME OVER IMAGE
         // =========================
 
-        GameObject gameOverObject = new GameObject("GameOverImage");
-        gameOverObject.transform.SetParent(canvas.transform, false);
+        gameOverImage = CreateImage(
+            "GameOverImage",
+            canvas.transform,
+            "HorriblyDrawnPixilart/GameOver"
+        );
 
-        gameOverImage = gameOverObject.AddComponent<Image>();
-
-        RectTransform gameOverRect = gameOverObject.GetComponent<RectTransform>();
-
-        gameOverRect.anchorMin = new Vector2(0.5f, 0.5f);
-        gameOverRect.anchorMax = new Vector2(0.5f, 0.5f);
-
-        gameOverRect.anchoredPosition = Vector2.zero;
-
-        gameOverRect.sizeDelta = new Vector2(600, 300);
-
-
-        Sprite gameOverSprite = Resources.Load<Sprite>("HorriblyDrawnPixilart/GameOver");
-
-        if (gameOverSprite != null)
-        {
-            gameOverImage.sprite = gameOverSprite;
-        }
-        else
-        {
-            Debug.LogError("GameOver.png not found!");
-        }
+        gameOverImage.GetComponent<RectTransform>().anchoredPosition =
+            Vector2.zero;
 
         gameOverImage.enabled = false;
     }
 
 
 
+    Image CreateImage(string name, Transform parent, string path)
+    {
+        GameObject obj = new GameObject(name);
+
+        obj.transform.SetParent(parent, false);
+
+        Image image = obj.AddComponent<Image>();
+
+        RectTransform rect = obj.GetComponent<RectTransform>();
+
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+
+        rect.sizeDelta = new Vector2(600, 300);
+
+
+        Sprite sprite = Resources.Load<Sprite>(path);
+
+        if(sprite != null)
+        {
+            image.sprite = sprite;
+        }
+        else
+        {
+            Debug.LogError(path + " not found!");
+        }
+
+
+        // Put image above previous UI
+        obj.transform.SetAsLastSibling();
+
+
+        return image;
+    }
+
+
+
     void Update()
     {
-        // Press SPACE to continue
-        if (continueActive && Keyboard.current.spaceKey.wasPressedThisFrame)
+        if (continueActive &&
+            Keyboard.current != null &&
+            Keyboard.current.spaceKey.wasPressedThisFrame)
         {
             UseContinue();
         }
@@ -156,20 +184,63 @@ public class ContinueManager : MonoBehaviour
 
     public void ShowContinueScreen()
     {
-        fadeImage.color = new Color(0f, 0f, 0f, 0.5f);
-
-        continueImage.enabled = true;
-
         continueActive = true;
 
 
-        if (countdownRoutine != null)
+        continueImage.enabled = true;
+
+        if(countdownRoutine != null)
         {
             StopCoroutine(countdownRoutine);
         }
 
 
-        countdownRoutine = StartCoroutine(StartCountdown());
+        countdownRoutine =
+            StartCoroutine(FadeToBlack());
+
+
+        countdownRoutine =
+            StartCoroutine(StartCountdown());
+    }
+
+
+
+    IEnumerator FadeToBlack()
+    {
+        float timer = 0;
+        float duration = 1f;
+
+
+        continueWhiteImage.enabled = true;
+
+
+        while(timer < duration)
+        {
+            timer += Time.deltaTime;
+
+
+            float alpha =
+                Mathf.Lerp(0, 1, timer / duration);
+
+
+            fadeImage.color =
+                new Color(0,0,0,alpha);
+
+
+            continueWhiteImage.color =
+                new Color(1,1,1,alpha);
+
+
+            yield return null;
+        }
+
+
+        fadeImage.color =
+            new Color(0,0,0,1);
+
+
+        continueWhiteImage.color =
+            new Color(1,1,1,1);
     }
 
 
@@ -179,25 +250,29 @@ public class ContinueManager : MonoBehaviour
         int time = 20;
 
 
-        while (time > 0)
+        while(time > 0)
         {
-            countdownText.text = time.ToString();
+            countdownText.text =
+                time.ToString();
+
 
             yield return new WaitForSeconds(1);
+
 
             time--;
         }
 
 
-        // =========================
+
         // GAME OVER
-        // =========================
 
         continueActive = false;
 
         countdownText.text = "";
 
         continueImage.enabled = false;
+        continueWhiteImage.enabled = false;
+
 
         gameOverImage.enabled = true;
 
@@ -218,28 +293,35 @@ public class ContinueManager : MonoBehaviour
         Debug.Log("Continue Used");
 
 
-        // Add 3 lives using LivesManager
-        if (LivesManager.Instance != null)
+        if(LivesManager.Instance != null)
         {
             LivesManager.Instance.AddPlayer1Life();
             LivesManager.Instance.AddPlayer1Life();
             LivesManager.Instance.AddPlayer1Life();
+
+
+            LivesManager.Instance.StartPlayer1Invincibility();
+            LivesManager.Instance.StartPlayer2Invincibility();
         }
 
 
-        // Hide continue screen
-        fadeImage.color = new Color(0f, 0f, 0f, 0f);
 
-        continueImage.enabled = false;
-
-        countdownText.text = "";
-
-
-        // Stop countdown
-        if (countdownRoutine != null)
+        if(countdownRoutine != null)
         {
             StopCoroutine(countdownRoutine);
         }
+
+
+        fadeImage.color =
+            new Color(0,0,0,0);
+
+
+        continueImage.enabled = false;
+        continueWhiteImage.enabled = false;
+        gameOverImage.enabled = false;
+
+
+        countdownText.text = "";
 
 
         continueActive = false;
