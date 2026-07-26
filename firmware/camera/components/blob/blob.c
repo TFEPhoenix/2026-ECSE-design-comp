@@ -150,6 +150,10 @@ bool find_all_blobs(image_t image, blob_t best[4]) {
 
             blob_t b = find_blob(image, coord);
 
+            if (b.pixels == 0) {
+                return false;
+            }
+
             if (b.pixels < MIN_BLOB_SIZE) {
                 continue;
             }
@@ -163,7 +167,8 @@ bool find_all_blobs(image_t image, blob_t best[4]) {
     }
 
     order_corners(best);
-    /// this seems to break more things then it should plus orientation filtrer should hopefully replace it
+    /// this seems to break more things then it should plus orientation filtrer
+    /// should hopefully replace it
     // align_to_previous(best);
     return true;
 }
