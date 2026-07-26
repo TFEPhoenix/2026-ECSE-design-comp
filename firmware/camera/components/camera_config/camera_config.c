@@ -45,14 +45,12 @@ static void camera_configure_sensor() {
     s->set_quality(s, 0);
 
     s->set_brightness(s, 0);
-    s->set_contrast(s, 3);
-    s->set_saturation(s, -4);
-    s->set_sharpness(s, 3);
-    s->set_denoise(s, 8);
+    s->set_contrast(s, 2);
+    s->set_saturation(s, -2);
 
-    s->set_aec_value(s, 300);
+    s->set_aec_value(s, 1200);
     s->set_agc_gain(s, 20);
-    s->set_gainceiling(s, GAINCEILING_2X);
+    s->set_gainceiling(s, GAINCEILING_128X);
 
     // Disable all the auto shit
     s->set_whitebal(s, 0);
@@ -67,9 +65,6 @@ static void camera_configure_sensor() {
     s->set_hmirror(s, 0);
     s->set_vflip(s, 0);
     s->set_colorbar(s, 0);
-
-    // s->set_reg(s, 0x3824, 0x1f, 0x04);
-    // s->set_reg(s, 0x460c, 0x02, 0x02);
 }
 
 esp_err_t camera_init() {

@@ -163,6 +163,7 @@ bool find_all_blobs(image_t image, blob_t best[4]) {
     }
 
     order_corners(best);
-    align_to_previous(best);
+    /// this seems to break more things then it shoul
+    // align_to_previous(best);
     return true;
 }
