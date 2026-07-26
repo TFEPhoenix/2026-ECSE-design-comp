@@ -37,8 +37,6 @@ void hid_init(void) {
     tusb_init(BOARD_TUD_RHPORT, &dev_init);
 
     board_init_after_tusb();
-
-    tud_hid_abs_mouse_report(REPORT_ID_MOUSE, 0x00, 16383, 16383, 0, 0);
 }
 
 void hid_update(int16_t x, int16_t y, bool clicking) {
