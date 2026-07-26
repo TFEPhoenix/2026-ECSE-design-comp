@@ -17,13 +17,15 @@ static volatile bool sample_ready = false;
 static volatile camera_sample_t latest_sample;
 
 static void parse_and_store(const char *line) {
-    float col, row;
+    float col, row, dist_m;
     int found_flag;
 
-    if (sscanf(line, "POS,%f,%f,%d", &col, &row, &found_flag) == 3) {
+    if (sscanf(line, "POS,%f,%f,%d,%f", &col, &row, &found_flag, &dist_m) ==
+        4) {
         latest_sample.col = col;
         latest_sample.row = row;
         latest_sample.found = (found_flag != 0);
+        latest_sample.dist_m = dist_m;
         sample_ready = true;
     }
 }
@@ -67,7 +69,7 @@ bool camera_uart_get_sample(camera_sample_t *out) {
 
     uint32_t saved_irq = save_and_disable_interrupts();
     *out = (camera_sample_t){latest_sample.col, latest_sample.row,
-                             latest_sample.found};
+                             latest_sample.found, latest_sample.dist_m};
     sample_ready = false;
     restore_interrupts(saved_irq);
 
