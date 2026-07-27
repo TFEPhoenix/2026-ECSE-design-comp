@@ -48,7 +48,7 @@ static void camera_configure_sensor() {
     s->set_contrast(s, 2);
     s->set_saturation(s, -2);
 
-    s->set_aec_value(s, 1200);
+    s->set_aec_value(s, 300);
     s->set_agc_gain(s, 20);
     s->set_gainceiling(s, GAINCEILING_128X);
 

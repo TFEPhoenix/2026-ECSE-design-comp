@@ -9,10 +9,15 @@
 
 #define WAIT_PERIOD_US 1000
 #define ORIENTATION_ALPHA 0.98f
+
 #define DEG_TO_RAD (float)(M_PI / 180.0)
 
+// static float W_real = 0.60f;
+// static float H_real = 0.34f;
 static float W_real = 0.50f;
 static float H_real = 0.30f;
+
+#define PRINT_EVERY_N 200
 
 void core1_mainloop() {
     camera_uart_init();
@@ -22,96 +27,73 @@ void core1_mainloop() {
     orientation_filter_init(&orient, ORIENTATION_ALPHA);
 
     one_euro_filter_t filter_u, filter_v;
-    
-    one_euro_init(&filter_u, 1.5f, 0.02f, 1.0f);
-    one_euro_init(&filter_v, 1.5f, 0.02f, 1.0f);
 
-    float cursor_u = 0.5f;
-    float cursor_v = 0.5f;
+    one_euro_init(&filter_u, 1.0f, 0.007f, 1.0f);
+    one_euro_init(&filter_v, 1.0f, 0.007f, 1.0f);
+
+    const float dt = WAIT_PERIOD_US / 1e6f;
+
+    float last_cam_u = 0.5f;
+    float last_cam_v = 0.5f;
     float D_current = 1.0f;
-    bool cam_was_valid = false;
 
+    uint32_t loop_count = 0;
     absolute_time_t next_sample = get_absolute_time();
-    absolute_time_t last_imu_time = get_absolute_time();
 
     while (true) {
         next_sample = delayed_by_us(next_sample, WAIT_PERIOD_US);
-
-        imu_sample_t imu = {0};
-        bool imu_ready = imu_get_sample(&imu);
-
-        float gy = imu.gyro_dps[1];
-        float gz = imu.gyro_dps[2];
-
-        if (fabsf(gy) < 0.5f) gy = 0.0f;
-        if (fabsf(gz) < 0.5f) gz = 0.0f;
-
-        float motion_speed = sqrtf(gy * gy + gz * gz);
+        loop_count++;
 
         camera_sample_t cam = {0};
-        bool cam_found = camera_uart_get_sample(&cam) && cam.found;
-
-        if (cam_found) {
-            float target_u = 1.0f - cam.col;
-            float target_v = cam.row;
+        if (camera_uart_get_sample(&cam) && cam.found) {
+            last_cam_u = 1 - cam.col;
+            last_cam_v = cam.row;
             D_current = cam.dist_m;
 
-            if (!cam_was_valid) {
-                cursor_u = target_u;
-                cursor_v = target_v;
-                cam_was_valid = true;
-            } else if (motion_speed < 60.0f) {
-                float diff_u = target_u - cursor_u;
-                float diff_v = target_v - cursor_v;
-                float err_dist = sqrtf(diff_u * diff_u + diff_v * diff_v);
+            orientation_filter_reset(
+                &orient); // camera gives us the truth we can reset imu shit
 
-                if (err_dist < 0.20f) {
-                    const float MAX_STEP = 0.002f; 
-                    if (diff_u > MAX_STEP) diff_u = MAX_STEP;
-                    if (diff_u < -MAX_STEP) diff_u = -MAX_STEP;
-                    if (diff_v > MAX_STEP) diff_v = MAX_STEP;
-                    if (diff_v < -MAX_STEP) diff_v = -MAX_STEP;
-
-                    cursor_u += diff_u * 0.30f;
-                    cursor_v += diff_v * 0.30f;
-                }
+            if (loop_count % PRINT_EVERY_N == 0) {
+                // printf("CAM correction: u=%.4f v=%.4f D=%.3fm\n", last_cam_u,
+                //        last_cam_v, D_current);
             }
-        } else {
-            cam_was_valid = false;
         }
 
-        if (imu_ready) {
-            absolute_time_t now = get_absolute_time();
-            float actual_dt = absolute_time_diff_us(last_imu_time, now) / 1e6f;
-            last_imu_time = now;
+        imu_sample_t imu = {0};
+        if (imu_get_sample(&imu)) {
+            orientation_filter_update(&orient, &imu, dt);
 
-            orientation_filter_update(&orient, &imu, actual_dt);
+            float yaw_rad = orient.yaw_deg * DEG_TO_RAD;
+            float pitch_rad = orient.pitch_deg * DEG_TO_RAD;
 
-            float roll_rad = orient.roll_deg * DEG_TO_RAD;
-            float cos_r = cosf(roll_rad);
-            float sin_r = sinf(roll_rad);
+            float du = -(D_current * yaw_rad) / W_real;
+            float dv = -(D_current * pitch_rad) / H_real;
 
-            float pitch_rate = gy * cos_r - gz * sin_r; 
-            float yaw_rate   = gy * sin_r + gz * cos_r; 
+            float predicted_u = last_cam_u + du;
+            float predicted_v = last_cam_v + dv;
 
-            float u_vel = -(D_current * (yaw_rate * DEG_TO_RAD)) / W_real;
-            float v_vel = -(D_current * (pitch_rate * DEG_TO_RAD)) / H_real;
+            float smooth_u = one_euro_filter(&filter_u, predicted_u, dt);
+            float smooth_v = one_euro_filter(&filter_v, predicted_v, dt);
 
-            cursor_u += u_vel * actual_dt;
-            cursor_v += v_vel * actual_dt;
-
-            float smooth_u = one_euro_filter(&filter_u, cursor_u, actual_dt);
-            float smooth_v = one_euro_filter(&filter_v, cursor_v, actual_dt);
-
-            if (smooth_u < 0.0f) smooth_u = 0.0f;
-            if (smooth_u > 1.0f) smooth_u = 1.0f;
-            if (smooth_v < 0.0f) smooth_v = 0.0f;
-            if (smooth_v > 1.0f) smooth_v = 1.0f;
+            // clamp to the screen edges
+            if (smooth_u < 0.0f)
+                smooth_u = 0.0f;
+            if (smooth_u > 1.0f)
+                smooth_u = 1.0f;
+            if (smooth_v < 0.0f)
+                smooth_v = 0.0f;
+            if (smooth_v > 1.0f)
+                smooth_v = 1.0f;
 
             uint16_t x = (uint16_t)(smooth_u * 32767.0f);
             uint16_t y = (uint16_t)(smooth_v * 32767.0f);
 
             shared_state_update_coords(x, y);
+
+            if (loop_count % PRINT_EVERY_N == 0) {
+                // printf("cursor: u=%.4f v=%.4f -> x=%u y=%u\n", smooth_u,
+                //        smooth_v, x, y);
+            }
         }
 
         busy_wait_until(next_sample);
