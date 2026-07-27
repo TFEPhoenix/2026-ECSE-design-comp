@@ -19,17 +19,26 @@ void orientation_filter_update(orientation_filter_t *f, const imu_sample_t *imu,
         f->initialized = true;
     }
 
+    // Calculate total acceleration magnitude
+    float accel_mag = sqrtf(imu->accel_g[0] * imu->accel_g[0] +
+                            imu->accel_g[1] * imu->accel_g[1] +
+                            imu->accel_g[2] * imu->accel_g[2]);
+
+    // During a fast flick, G-forces spike. If we aren't near 1G, rely purely on
+    // the gyro (alpha = 1.0f) to prevent horizontal acceleration from tricking
+    // the filter into thinking the gun rolled.
+    float roll_alpha = (accel_mag > 0.8f && accel_mag < 1.2f) ? f->alpha : 1.0f;
+
     f->roll_deg = complementary_filter(
-        f->alpha, f->roll_deg, imu->gyro_dps[0] * dt, imu_roll_deg(imu));
+        roll_alpha, f->roll_deg, imu->gyro_dps[0] * dt, imu_roll_deg(imu));
 
     float roll_rad = f->roll_deg * DEG_TO_RAD;
     float cos_r = cosf(roll_rad);
     float sin_r = sinf(roll_rad);
 
-    float gy = imu->gyro_dps[1];
+    float gy = imu->gyro_dps[1]; 
     float gz = imu->gyro_dps[2];
 
-    // can flip sign if its wrong way round
     float pitch_rate = gy * cos_r - gz * sin_r;
     float yaw_rate = gy * sin_r + gz * cos_r;
 

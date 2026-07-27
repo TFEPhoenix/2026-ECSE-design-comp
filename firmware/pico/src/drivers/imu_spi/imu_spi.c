@@ -10,7 +10,8 @@
 #define PIN_MOSI 3
 #define PIN_MISO 4
 #define SPI_PORT spi0
-#define CLK_FREQ 500000
+// #define CLK_FREQ 500000
+#define CLK_FREQ 10000000
 
 #define RAD_TO_DEG (180.0f / M_PI)
 
